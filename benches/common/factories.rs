@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use petgraph::data::Build;
+use petgraph::data::{Build, FromElements};
 use petgraph::prelude::*;
 use petgraph::visit::NodeIndexable;
 
@@ -180,7 +180,7 @@ const BIPARTITE: &str = "
 fn parse_graph<Ty, G>(s: &str) -> G
 where
     Ty: EdgeType,
-    G: Default + Build<NodeWeight = (), EdgeWeight = ()> + NodeIndexable,
+    G: Default + Build<NodeWeight = (), EdgeWeight = ()> + NodeIndexable + FromElements,
 {
     let mut g: G = Default::default();
     let s = s.trim();
@@ -211,7 +211,7 @@ pub struct GraphFactory<Ty, G = Graph<(), (), Ty>> {
 impl<Ty, G> GraphFactory<Ty, G>
 where
     Ty: EdgeType,
-    G: Default + Build<NodeWeight = (), EdgeWeight = ()> + NodeIndexable,
+    G: Default + Build<NodeWeight = (), EdgeWeight = ()> + NodeIndexable + FromElements,
 {
     fn new() -> Self {
         GraphFactory {

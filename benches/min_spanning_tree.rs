@@ -11,8 +11,10 @@ use common::*;
 
 use petgraph::{
     algo::min_spanning_tree,
+    data::FromElements,
+    graph::UnGraph,
     visit::{Data, IntoEdgeReferences, IntoNodeReferences, NodeIndexable},
-    Graph,
+    Graph, Undirected,
 };
 
 #[bench]
@@ -65,9 +67,14 @@ fn min_spanning_tree_petersen_dir_bench(bench: &mut Bencher) {
 
 fn bench_min_spanning_tree<G>(bench: &mut Bencher, a: G, b: G)
 where
-    G: Data + IntoNodeReferences + IntoEdgeReferences + NodeIndexable,
+    G: Data + IntoNodeReferences + IntoEdgeReferences + NodeIndexable + FromElements,
     G::NodeWeight: Clone,
     G::EdgeWeight: Clone + PartialOrd,
 {
-    bench.iter(|| (min_spanning_tree(a), min_spanning_tree(b)));
+    bench.iter(|| {
+        let mst_a: Graph<G::NodeWeight, G::EdgeWeight, Undirected> =
+            UnGraph::from_elements(min_spanning_tree(a));
+        let mst_b = min_spanning_tree(b);
+        (mst_a, mst_b)
+    });
 }

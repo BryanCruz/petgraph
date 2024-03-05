@@ -1,0 +1,11 @@
+
+running 6 tests
+test min_spanning_tree_full_dir_bench       ... bench:         278 ns/iter (+/- 11)
+test min_spanning_tree_full_undir_bench     ... bench:         229 ns/iter (+/- 16)
+test min_spanning_tree_petersen_dir_bench   ... bench:         155 ns/iter (+/- 5)
+test min_spanning_tree_petersen_undir_bench ... bench:         160 ns/iter (+/- 13)
+test min_spanning_tree_praust_dir_bench     ... bench:         283 ns/iter (+/- 22)
+test min_spanning_tree_praust_undir_bench   ... bench:         225 ns/iter (+/- 85)
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 6 measured; 0 filtered out; finished in 10.56s
+
