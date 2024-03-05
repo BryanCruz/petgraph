@@ -642,7 +642,6 @@ where
     G: Data + IntoNodeReferences,
 {
     graph: G,
-    //    #[allow(clippy::type_complexity)]
     node_ids: Option<G::NodeReferences>,
     node_ids_queue: G::NodeReferences,
     initial_node: Option<G::NodeId>,
@@ -728,7 +727,7 @@ where
         while let Some(MinScored(score, (a, b))) = self.sort_edges.pop() {
             let (a_index, b_index) = (g.to_index(a), g.to_index(b));
 
-            // check if a and b are already taken, if not, then edge is part of mst
+            // check if a and b were already taken, edge is not part of mst if one of them was already taken
             if self.nodes_taken.contains(&a_index) && self.nodes_taken.contains(&b_index) {
                 continue;
             }
@@ -741,10 +740,10 @@ where
 
             let (source_index, target_index) = (g.to_index(source), g.to_index(target));
 
-            // add target to nodes taken
+            // mark target node as taken
             self.nodes_taken.insert(target_index);
 
-            // add b edges to priority queue, if edge target is not already taken
+            // add target edges to priority queue
             for edge in g.edges(target) {
                 self.sort_edges.push(MinScored(
                     edge.weight().clone(),
@@ -752,7 +751,7 @@ where
                 ));
             }
 
-            // return edge connecting a and b
+            // return edge connecting source and target
             let (&source_order, &target_order) = match (
                 self.node_map.get(&source_index),
                 self.node_map.get(&target_index),
@@ -768,19 +767,20 @@ where
             });
         }
 
+        // checks if node_ids_queue still has elements, which will happen in a disconnected graph
         while let Some(node) = self.node_ids_queue.next() {
             let node_index = g.to_index(node.id());
             if self.nodes_taken.contains(&node_index) {
                 continue;
             }
 
-            // node is part of a disconnected tree, so algorithm is repeated using new initial vertex
+            // node is part of a disconnected part, so algorithm is repeated using new initial vertex
             self.nodes_taken.insert(node_index);
             self.initial_node = Some(node.id());
             return self.next();
         }
 
-        // all nodes were taken and all elements of MSF were returned
+        // all graph parts were processed, so all elements of MST were returned
         return None;
     }
 }
