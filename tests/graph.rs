@@ -281,6 +281,46 @@ fn mst_prim() {
 }
 
 #[test]
+fn mst_prim_2_nodes_undirected() {
+    use petgraph::data::FromElements;
+
+    let mut gr = Graph::<_, _>::new();
+    let a = gr.add_node("A");
+    let b = gr.add_node("B");
+
+    gr.add_edge(a, b, 1.);
+    gr.add_edge(b, a, 3.);
+
+    let mst = UnGraph::from_elements(min_spanning_tree_prim(&gr));
+
+    assert!(mst.node_count() == gr.node_count());
+    assert!(mst.edge_count() == 1);
+
+    assert!(mst.find_edge(a, b).is_some());
+    assert!(mst.find_edge(b, a).is_none());
+}
+
+#[test]
+fn mst_prim_2_nodes_directed() {
+    use petgraph::data::FromElements;
+
+    let mut gr = Graph::<_, _>::new();
+    let a = gr.add_node("A");
+    let b = gr.add_node("B");
+
+    gr.add_edge(a, b, 1.);
+    gr.add_edge(b, a, 3.);
+
+    let mst = DiGraph::from_elements(min_spanning_tree_prim(&gr));
+
+    assert!(mst.node_count() == gr.node_count());
+    assert!(mst.edge_count() == 2);
+
+    assert!(mst.find_edge(a, b).is_some());
+    assert!(mst.find_edge(b, a).is_some());
+}
+
+#[test]
 fn mst_prim_only_nodes() {
     use petgraph::data::FromElements;
 
