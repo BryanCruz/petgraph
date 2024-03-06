@@ -281,43 +281,42 @@ fn mst_prim() {
 }
 
 #[test]
-fn mst_prim_2_nodes_undirected() {
+fn mst_prim_empty_graph() {
     use petgraph::data::FromElements;
 
-    let mut gr = Graph::<_, _>::new();
-    let a = gr.add_node("A");
-    let b = gr.add_node("B");
+    let gr: Graph<&str, usize> = Graph::new();
 
-    gr.add_edge(a, b, 1.);
-    gr.add_edge(b, a, 3.);
+    let mst: Graph<&str, usize, Undirected> = UnGraph::from_elements(min_spanning_tree_prim(&gr));
 
-    let mst = UnGraph::from_elements(min_spanning_tree_prim(&gr));
-
-    assert!(mst.node_count() == gr.node_count());
-    assert!(mst.edge_count() == 1);
-
-    assert!(mst.find_edge(a, b).is_some());
-    assert!(mst.find_edge(b, a).is_none());
+    assert!(mst.node_count() == 0);
+    assert!(mst.edge_count() == 0);
 }
 
 #[test]
-fn mst_prim_2_nodes_directed() {
+fn mst_prim_one_node() {
+    use petgraph::data::FromElements;
+
+    let mut gr: Graph<&str, usize> = Graph::<_, _>::new();
+    gr.add_node("A");
+
+    let mst: Graph<&str, usize, Undirected> = UnGraph::from_elements(min_spanning_tree_prim(&gr));
+
+    assert!(mst.node_count() == 1);
+    assert!(mst.edge_count() == 0);
+}
+
+#[test]
+fn mst_prim_one_node_cyclic() {
     use petgraph::data::FromElements;
 
     let mut gr = Graph::<_, _>::new();
     let a = gr.add_node("A");
-    let b = gr.add_node("B");
+    gr.add_edge(a, a, 1.);
 
-    gr.add_edge(a, b, 1.);
-    gr.add_edge(b, a, 3.);
+    let mst: Graph<&str, f64, Undirected> = UnGraph::from_elements(min_spanning_tree_prim(&gr));
 
-    let mst = DiGraph::from_elements(min_spanning_tree_prim(&gr));
-
-    assert!(mst.node_count() == gr.node_count());
-    assert!(mst.edge_count() == 2);
-
-    assert!(mst.find_edge(a, b).is_some());
-    assert!(mst.find_edge(b, a).is_some());
+    assert!(mst.node_count() == 1);
+    assert!(mst.edge_count() == 0);
 }
 
 #[test]
@@ -340,15 +339,40 @@ fn mst_prim_only_nodes() {
 }
 
 #[test]
-fn mst_prim_empty() {
+fn mst_prim_two_nodes_one_edge() {
     use petgraph::data::FromElements;
 
-    let gr: Graph<&str, usize> = Graph::new();
+    let mut gr = Graph::<_, _>::new();
+    let a = gr.add_node("A");
+    let b = gr.add_node("B");
+    gr.add_edge(a, b, 1.);
 
-    let mst: Graph<&str, usize, Undirected> = UnGraph::from_elements(min_spanning_tree_prim(&gr));
+    let mst = UnGraph::from_elements(min_spanning_tree_prim(&gr));
 
-    assert!(mst.node_count() == 0);
-    assert!(mst.edge_count() == 0);
+    assert!(mst.node_count() == gr.node_count());
+    assert!(mst.edge_count() == 1);
+    assert!(mst.find_edge(a, b).is_some());
+}
+
+#[test]
+fn mst_prim_three_nodes_cyclic() {
+    use petgraph::data::FromElements;
+
+    let mut gr = Graph::<_, _>::new();
+    let a = gr.add_node("A");
+    let b = gr.add_node("B");
+    let c = gr.add_node("C");
+    gr.add_edge(a, b, 2.);
+    gr.add_edge(b, c, 1.);
+    gr.add_edge(c, a, 3.);
+
+    let mst = UnGraph::from_elements(min_spanning_tree_prim(&gr));
+
+    assert!(mst.node_count() == gr.node_count());
+    assert!(mst.edge_count() == 2);
+    assert!(mst.find_edge(a, b).is_some());
+    assert!(mst.find_edge(b, c).is_some());
+    assert!(mst.find_edge(c, a).is_none());
 }
 
 #[test]
