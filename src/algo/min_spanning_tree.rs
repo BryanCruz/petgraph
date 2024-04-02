@@ -22,6 +22,10 @@ use crate::visit::{IntoEdgeReferences, NodeIndexable};
 /// and **|V| - c** edges, where **c** is the number of connected components in `g`.
 ///
 /// Use `from_elements` to create a graph from the resulting iterator.
+///
+/// See also: [`.min_spanning_tree_prim(g)`][1] for implementation using Prim's algorithm.
+///
+/// [1]: fn.min_spanning_tree_prim.html
 pub fn min_spanning_tree<G>(g: G) -> MinSpanningTree<G>
 where
     G::NodeWeight: Clone,
@@ -126,48 +130,52 @@ where
 {
     graph: G,
     node_ids: Option<G::NodeReferences>,
-    node_ids_queue: G::NodeReferences,
-    initial_node: Option<G::NodeId>,
-    sort_edges: BinaryHeap<MinScored<G::EdgeWeight, (G::NodeId, G::NodeId)>>,
     node_map: HashMap<usize, usize>,
     node_count: usize,
+    sort_edges: BinaryHeap<MinScored<G::EdgeWeight, (G::NodeId, G::NodeId)>>,
     nodes_taken: HashSet<usize>,
+    initial_node: Option<G::NodeRef>,
 }
 
 /// \[Generic\] Compute a *minimum spanning tree* of a graph using Prim's algorithm.
 ///
-/// The input graph is treated as if undirected.
+/// Behavior is undefined if input graph is disconnected (has more than 1 component)
+/// or if graph is directed.
 ///
 /// Using Prim's algorithm with runtime **O(|E| log |E|)**.
 ///
 /// The resulting graph has all the vertices of the input graph (with identical node indices),
-/// and **|V| - c** edges, where **c** is the number of connected components in `g`.
+/// and **|V| - 1** edges.
 ///
 /// Use `from_elements` to create a graph from the resulting iterator.
+///
+/// See also: [`.min_spanning_tree(g)`][1] for implementation using Kruskal's algorithm and support for minimum spanning forest.
+///
+/// [1]: fn.min_spanning_tree.html
 pub fn min_spanning_tree_prim<G>(g: G) -> MinSpanningTreePrim<G>
 where
     G::NodeWeight: Clone,
     G::EdgeWeight: Clone + PartialOrd,
     G: IntoNodeReferences + IntoEdgeReferences + NodeIndexable,
 {
-    let nodes = g.node_references();
-    let nodes_taken = HashSet::with_capacity(nodes.size_hint().0);
-
-    let edges = g.edge_references();
-    let sort_edges = BinaryHeap::with_capacity(edges.size_hint().0);
+    let sort_edges = BinaryHeap::with_capacity(g.edge_references().size_hint().0);
+    let nodes_taken = HashSet::with_capacity(g.node_references().size_hint().0);
+    let initial_node = g.node_references().next();
 
     MinSpanningTreePrim {
         graph: g,
         node_ids: Some(g.node_references()),
-        node_ids_queue: g.node_references(),
-        initial_node: None,
-        sort_edges,
         node_map: HashMap::new(),
         node_count: 0,
+        sort_edges,
         nodes_taken,
+        initial_node,
     }
 }
 
+/// An iterator producing a minimum spanning tree of a graph.
+/// It will first iterate all Node elements from original graph,
+/// then iterate Edge elements from computed minimum spanning forest.
 impl<G> Iterator for MinSpanningTreePrim<G>
 where
     G: IntoNodeReferences + IntoEdges + NodeIndexable,
@@ -177,9 +185,8 @@ where
     type Item = Element<G::NodeWeight, G::EdgeWeight>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        // Iterate through Node elements
         let g = self.graph;
-
-        // first return all nodes in graph, also keeping a map of their order of appearance to be used in mst edges
         if let Some(ref mut iter) = self.node_ids {
             if let Some(node) = iter.next() {
                 self.node_map.insert(g.to_index(node.id()), self.node_count);
@@ -191,30 +198,31 @@ where
         }
         self.node_ids = None;
 
-        // return edges that are part of MST, as Prim's algorithm is defined
-        // Prim's algorithm.
+        // Bootstrap Prim's algorithm to find MST Edge elements
         if let Some(initial_node) = self.initial_node {
-            assert!(self.sort_edges.is_empty());
-            self.initial_node = None;
+            let initial_node_index = g.to_index(initial_node.id());
+            self.nodes_taken.insert(initial_node_index);
 
-            // add initial_node edges to priority queue and to taken nodes
-            for edge in g.edges(initial_node) {
+            let initial_edges = g.edges(initial_node.id());
+            for edge in initial_edges {
                 self.sort_edges.push(MinScored(
                     edge.weight().clone(),
                     (edge.source(), edge.target()),
                 ));
             }
-            self.nodes_taken.insert(g.to_index(initial_node));
-        }
+        };
+        self.initial_node = None;
 
+        // Iterate through Edge elements, adding an edge to the MST iff some of it's nodes are not part of MST yet.
         while let Some(MinScored(score, (a, b))) = self.sort_edges.pop() {
             let (a_index, b_index) = (g.to_index(a), g.to_index(b));
 
-            // check if a and b were already taken, edge is not part of mst if one of them was already taken
             if self.nodes_taken.contains(&a_index) && self.nodes_taken.contains(&b_index) {
                 continue;
             }
 
+            // Assert that only 1 node from edge is already taken and set it as source.
+            assert!(!(self.nodes_taken.contains(&a_index) && self.nodes_taken.contains(&b_index)));
             let (source, target) = if self.nodes_taken.contains(&a_index) {
                 (a, b)
             } else {
@@ -222,11 +230,8 @@ where
             };
 
             let (source_index, target_index) = (g.to_index(source), g.to_index(target));
-
-            // mark target node as taken
             self.nodes_taken.insert(target_index);
 
-            // add target edges to priority queue
             for edge in g.edges(target) {
                 self.sort_edges.push(MinScored(
                     edge.weight().clone(),
@@ -234,7 +239,6 @@ where
                 ));
             }
 
-            // return edge connecting source and target
             let (&source_order, &target_order) = match (
                 self.node_map.get(&source_index),
                 self.node_map.get(&target_index),
@@ -250,20 +254,6 @@ where
             });
         }
 
-        // checks if node_ids_queue still has elements, which will happen in a disconnected graph
-        while let Some(node) = self.node_ids_queue.next() {
-            let node_index = g.to_index(node.id());
-            if self.nodes_taken.contains(&node_index) {
-                continue;
-            }
-
-            // node is part of a disconnected part, so algorithm is repeated using new initial vertex
-            self.nodes_taken.insert(node_index);
-            self.initial_node = Some(node.id());
-            return self.next();
-        }
-
-        // all graph parts were processed, so all elements of MST were returned
         return None;
     }
 }

@@ -6,7 +6,7 @@ use petgraph::{
 };
 
 #[test]
-fn mst() {
+fn mst_kruskal() {
     use petgraph::data::FromElements;
 
     let mut gr = Graph::<_, _>::new();
@@ -87,14 +87,6 @@ fn mst_prim() {
     gr.add_edge(f, g, 11.);
     gr.add_edge(e, g, 9.);
 
-    // add a disjoint part
-    let h = gr.add_node("H");
-    let i = gr.add_node("I");
-    let j = gr.add_node("J");
-    gr.add_edge(h, i, 1.);
-    gr.add_edge(h, j, 3.);
-    gr.add_edge(i, j, 1.);
-
     println!("{}", Dot::new(&gr));
 
     let mst = UnGraph::from_elements(min_spanning_tree_prim(&gr));
@@ -104,8 +96,7 @@ fn mst_prim() {
     println!("MST is:\n{:#?}", mst);
 
     assert!(mst.node_count() == gr.node_count());
-    // |E| = |N| - 2  because there are two disconnected components.
-    assert!(mst.edge_count() == gr.node_count() - 2);
+    assert!(mst.edge_count() == gr.node_count() - 1);
 
     // check the exact edges are there
     assert!(mst.find_edge(a, d).is_some());
@@ -114,13 +105,30 @@ fn mst_prim() {
     assert!(mst.find_edge(b, e).is_some());
     assert!(mst.find_edge(b, c).is_some());
     assert!(mst.find_edge(e, g).is_some());
-
-    assert!(mst.find_edge(h, i).is_some());
-    assert!(mst.find_edge(i, j).is_some());
 }
 
 #[test]
-fn mst_prim_only_nodes() {
+fn mst_prim_trivial_graph() {
+    use petgraph::data::FromElements;
+
+    let mut gr = Graph::<_, _>::new();
+    let a = gr.add_node("A");
+    let b = gr.add_node("B");
+    let a_b_weight = 7.;
+    gr.add_edge(a, b, a_b_weight);
+
+    let mst = UnGraph::from_elements(min_spanning_tree_prim(&gr));
+
+    assert!(mst.node_count() == gr.node_count());
+    assert!(mst.edge_count() == gr.node_count() - 1);
+
+    assert!(mst.find_edge(a, b).is_some());
+    let edge_weight = *mst.edge_weight(mst.find_edge(a, b).unwrap()).unwrap();
+    assert_eq!(edge_weight, a_b_weight);
+}
+
+#[test]
+fn mst_prim_graph_without_edges() {
     use petgraph::data::FromElements;
 
     let mut gr: Graph<&str, usize> = Graph::<_, _>::new();
@@ -139,7 +147,7 @@ fn mst_prim_only_nodes() {
 }
 
 #[test]
-fn mst_prim_empty() {
+fn mst_prim_empty_graph() {
     use petgraph::data::FromElements;
 
     let gr: Graph<&str, usize> = Graph::new();
