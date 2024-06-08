@@ -1,4 +1,4 @@
-use petgraph::{csr::Csr, graph6::Graph6, Graph, Undirected};
+use petgraph::{csr::Csr, graph6_encoder::Graph6, Graph, Undirected};
 
 #[cfg(feature = "graphmap")]
 use petgraph::graphmap::GraphMap;
