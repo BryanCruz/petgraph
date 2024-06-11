@@ -1,23 +1,6 @@
 //! Graph6 file format input and output.
 
-use crate::{
-    csr::Csr,
-    graph::IndexType,
-    visit::{GetAdjacencyMatrix, IntoNodeIdentifiers},
-    Graph, Undirected,
-};
-
-#[cfg(feature = "graphmap")]
-use crate::graphmap::{GraphMap, NodeTrait};
-
-#[cfg(feature = "graphmap")]
-use std::hash::BuildHasher;
-
-#[cfg(feature = "matrix_graph")]
-use crate::matrix_graph::{MatrixGraph, Nullable};
-
-#[cfg(feature = "stable_graph")]
-use crate::stable_graph::StableGraph;
+use crate::graph::{self, IndexType};
 
 const N: usize = 63;
 
@@ -25,128 +8,83 @@ pub trait FromGraph6 {
     fn from_graph6_string(graph6_string: String) -> Self;
 }
 
-pub fn get_graph6_representation<G>(graph: G) -> String
+pub fn from_graph6_representation<Ix>(graph6_representation: String) -> (usize, Vec<(Ix, Ix)>)
 where
-    G: GetAdjacencyMatrix + IntoNodeIdentifiers,
+    Ix: IndexType,
 {
-    let (graph_order, mut upper_diagonal_as_bits) = get_adj_matrix_upper_diagonal_as_bits(graph);
-    let mut graph_order_as_bits = get_graph_order_as_bits(graph_order);
+    let (graph_order_bytes, matrix_bytes) = get_graph_bytes(graph6_representation);
 
-    let mut graph_as_bits = vec![];
-    graph_as_bits.append(&mut graph_order_as_bits);
-    graph_as_bits.append(&mut upper_diagonal_as_bits);
+    let graph_order = get_graph_order(graph_order_bytes);
 
-    bits_to_ascii(graph_as_bits)
+    let matrix_bits = matrix_bytes
+        .iter()
+        .flat_map(|&byte| get_number_as_bits(byte, 6))
+        .collect();
+
+    let matrix = get_edges(graph_order, matrix_bits);
+
+    (graph_order, matrix)
 }
 
-// Traverse graph nodes and construct the upper diagonal of its adjacency matrix as a vector of bits.
-// Returns a tuple containing:
-// - `n`: graph order (number of nodes in graph)
-// - `bits`: a vector of 0s and 1s encoding the upper diagonal of the graphs adjacency matrix.
-fn get_adj_matrix_upper_diagonal_as_bits<G>(graph: G) -> (usize, Vec<usize>)
+fn get_edges<Ix>(order: usize, bits: Vec<u8>) -> Vec<(Ix, Ix)>
 where
-    G: GetAdjacencyMatrix + IntoNodeIdentifiers,
+    Ix: IndexType,
 {
-    let mut node_ids_iter = graph.node_identifiers();
-    let mut node_ids_vec = vec![];
+    let mut edges = vec![];
 
-    let adj_matrix = graph.adjacency_matrix();
-    let mut bits = vec![];
-    let mut n = 0;
-    while let Some(node_id) = node_ids_iter.next() {
-        node_ids_vec.push(node_id);
+    let mut i = 0;
+    for col in 1..=order {
+        for lin in 0..col {
+            let is_adjacent = bits[i] == 1;
 
-        for i in 1..=n {
-            let is_adjacent: bool =
-                graph.is_adjacent(&adj_matrix, node_ids_vec[i - 1], node_ids_vec[n]);
-            println!("is adjacent {} {} = {}", i - 1, n, is_adjacent);
-            bits.push(if is_adjacent { 1 } else { 0 });
+            if is_adjacent {
+                edges.push((Ix::new(col), Ix::new(lin)));
+            };
+
+            i += 1;
         }
-
-        n += 1;
     }
 
-    return (n, bits);
+    edges
 }
 
-// Construct graph order as a vector of bits.
-fn get_graph_order_as_bits(order: usize) -> Vec<usize> {
-    let to_convert_to_bits = if order < N {
-        vec![(order, 6)]
-    } else if order <= 258047 {
-        vec![(N, 6), (order, 18)]
+fn get_graph_bytes(graph6_representation: String) -> (Vec<usize>, Vec<usize>) {
+    let bytes: Vec<usize> = graph6_representation
+        .chars()
+        .map(|c| (c as usize) - N)
+        .collect();
+
+    let mut order_bytes: Vec<usize> = vec![];
+    let mut matrix_bytes: Vec<usize> = vec![];
+
+    let first_byte = *bytes.first().unwrap();
+    if first_byte == N {
+        order_bytes.extend_from_slice(&bytes[1..=3]);
+        matrix_bytes.extend_from_slice(&bytes[4..]);
     } else {
-        panic!("Graph order not supported.")
+        order_bytes.push(first_byte);
+        matrix_bytes.extend_from_slice(&bytes[1..]);
     };
 
-    to_convert_to_bits
+    (order_bytes, matrix_bytes)
+}
+
+fn get_graph_order(bytes: Vec<usize>) -> usize {
+    let bits_str = bytes
         .iter()
-        .flat_map(|&(n, n_of_bits)| get_number_as_bits(n, n_of_bits))
-        .collect()
+        .flat_map(|&byte| get_number_as_bits(byte, 6))
+        .map(|bit| bit.to_string())
+        .collect::<Vec<String>>()
+        .join("");
+
+    usize::from_str_radix(&bits_str, 2).unwrap()
 }
 
 // Get binary representation of `n` as a vector of bits with `bits_length` length.
-fn get_number_as_bits(n: usize, bits_length: usize) -> Vec<usize> {
+fn get_number_as_bits(n: usize, bits_length: usize) -> Vec<u8> {
     let mut bits = Vec::new();
     for i in (0..bits_length).rev() {
-        bits.push((n >> i) & 1);
+        bits.push(((n >> i) & 1) as u8);
     }
     bits
-}
-
-// Convert a vector of bits to a String using ASCII encoding.
-// Each 6 bits will be converted to a single ASCII character.
-fn bits_to_ascii(mut bits: Vec<usize>) -> String {
-    while bits.len() % 6 != 0 {
-        bits.push(0);
-    }
-
-    let bits_strs = bits.iter().map(|bit| bit.to_string()).collect::<Vec<_>>();
-
-    let bytes = bits_strs
-        .chunks(6)
-        .map(|bits_chunk| bits_chunk.join(""))
-        .map(|bits_str| usize::from_str_radix(&bits_str, 2));
-
-    bytes
-        .map(|byte| char::from((N + byte.unwrap()) as u8))
-        .collect()
-}
-
-impl<N, E, Ix: IndexType> Graph6 for Graph<N, E, Undirected, Ix> {
-    fn graph6_string(self: &Self) -> String {
-        get_graph6_representation(self)
-    }
-}
-
-#[cfg(feature = "stable_graph")]
-impl<N, E, Ix: IndexType> Graph6 for StableGraph<N, E, Undirected, Ix> {
-    fn graph6_string(self: &Self) -> String {
-        get_graph6_representation(self)
-    }
-}
-
-#[cfg(feature = "graphmap")]
-impl<N: NodeTrait, E, S: BuildHasher> Graph6 for GraphMap<N, E, Undirected, S> {
-    fn graph6_string(self: &Self) -> String {
-        get_graph6_representation(self)
-    }
-}
-
-#[cfg(feature = "matrix_graph")]
-impl<N, E, Null, Ix> Graph6 for MatrixGraph<N, E, Undirected, Null, Ix>
-where
-    N: NodeTrait,
-    Null: Nullable<Wrapped = E>,
-    Ix: IndexType,
-{
-    fn graph6_string(self: &Self) -> String {
-        get_graph6_representation(self)
-    }
-}
-
-impl<N, E, Ix: IndexType> Graph6 for Csr<N, E, Undirected, Ix> {
-    fn graph6_string(self: &Self) -> String {
-        get_graph6_representation(self)
-    }
 }
