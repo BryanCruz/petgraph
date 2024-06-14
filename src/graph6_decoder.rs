@@ -1,6 +1,18 @@
 //! Graph6 file format input and output.
 
-use crate::graph::{self, IndexType};
+use crate::{csr::Csr, graph::IndexType, stable_graph::StableUnGraph, Graph, Undirected};
+
+#[cfg(feature = "graphmap")]
+use crate::graphmap::GraphMap;
+
+#[cfg(feature = "graphmap")]
+use std::hash::BuildHasher;
+
+#[cfg(feature = "matrix_graph")]
+use crate::matrix_graph::{MatrixGraph, Nullable};
+
+#[cfg(feature = "stable_graph")]
+use crate::stable_graph::StableGraph;
 
 const N: usize = 63;
 
@@ -16,11 +28,13 @@ where
 
     let graph_order = get_graph_order(graph_order_bytes);
 
-    let matrix_bits = matrix_bytes
+    let matrix_bits: Vec<u8> = matrix_bytes
         .iter()
         .flat_map(|&byte| get_number_as_bits(byte, 6))
         .collect();
 
+    println!("my order {}", graph_order);
+    println!("matrix {:?}", matrix_bits);
     let matrix = get_edges(graph_order, matrix_bits);
 
     (graph_order, matrix)
@@ -31,17 +45,18 @@ where
     Ix: IndexType,
 {
     let mut edges = vec![];
+    println!("bits {:?}", bits);
 
-    let mut i = 0;
-    for col in 1..=order {
+    let mut bits_i = 0;
+    for col in 1..order {
         for lin in 0..col {
-            let is_adjacent = bits[i] == 1;
+            let is_adjacent = bits[bits_i] == 1;
 
             if is_adjacent {
-                edges.push((Ix::new(col), Ix::new(lin)));
+                edges.push((Ix::new(lin), Ix::new(col)));
             };
 
-            i += 1;
+            bits_i += 1;
         }
     }
 
@@ -87,4 +102,90 @@ fn get_number_as_bits(n: usize, bits_length: usize) -> Vec<u8> {
         bits.push(((n >> i) & 1) as u8);
     }
     bits
+}
+
+impl<Ix: IndexType> FromGraph6 for Graph<(), (), Undirected, Ix> {
+    fn from_graph6_string(graph6_string: String) -> Self {
+        let (order, edges): (usize, Vec<(Ix, Ix)>) = from_graph6_representation(graph6_string);
+
+        let mut graph: Graph<(), (), Undirected, Ix> = Graph::with_capacity(order, edges.len());
+        for _ in 0..order {
+            graph.add_node(());
+        }
+        graph.extend_with_edges(edges);
+
+        graph
+    }
+}
+
+#[cfg(feature = "stable_graph")]
+impl<Ix: IndexType> FromGraph6 for StableGraph<(), (), Undirected, Ix> {
+    fn from_graph6_string(graph6_string: String) -> Self {
+        let (order, edges): (usize, Vec<(Ix, Ix)>) = from_graph6_representation(graph6_string);
+
+        let mut graph: StableGraph<(), (), Undirected, Ix> =
+            StableUnGraph::with_capacity(order, edges.len());
+        for _ in 0..order {
+            graph.add_node(());
+        }
+        graph.extend_with_edges(edges);
+
+        graph
+    }
+}
+
+#[cfg(feature = "graphmap")]
+impl<Ix: IndexType, S: BuildHasher + Default> FromGraph6 for GraphMap<Ix, (), Undirected, S> {
+    fn from_graph6_string(graph6_string: String) -> Self {
+        let (order, edges): (usize, Vec<(Ix, Ix)>) = from_graph6_representation(graph6_string);
+
+        let mut graph: GraphMap<Ix, (), Undirected, S> =
+            GraphMap::with_capacity(order, edges.len());
+        for i in 0..order {
+            graph.add_node(Ix::new(i));
+        }
+        for (a, b) in edges {
+            graph.add_edge(a, b, ());
+        }
+
+        graph
+    }
+}
+
+#[cfg(feature = "matrix_graph")]
+impl<Null, Ix> FromGraph6 for MatrixGraph<(), (), Undirected, Null, Ix>
+where
+    Null: Nullable<Wrapped = ()>,
+    Ix: IndexType,
+{
+    fn from_graph6_string(graph6_string: String) -> Self {
+        let (order, edges): (usize, Vec<(Ix, Ix)>) = from_graph6_representation(graph6_string);
+
+        let mut graph: MatrixGraph<(), (), Undirected, Null, Ix> =
+            MatrixGraph::with_capacity(order);
+        for _ in 0..order {
+            graph.add_node(());
+        }
+        graph.extend_with_edges(edges.iter());
+
+        graph
+    }
+}
+
+impl<Ix: IndexType> FromGraph6 for Csr<(), (), Undirected, Ix> {
+    fn from_graph6_string(graph6_string: String) -> Self {
+        let (order, edges): (usize, Vec<(Ix, Ix)>) = from_graph6_representation(graph6_string);
+
+        let mut graph: Csr<(), (), Undirected, Ix> = Csr::new();
+        let mut nodes = Vec::new();
+        for _ in 0..order {
+            let i = graph.add_node(());
+            nodes.push(i);
+        }
+        for (a, b) in edges {
+            graph.add_edge(a, b, ());
+        }
+
+        graph
+    }
 }
