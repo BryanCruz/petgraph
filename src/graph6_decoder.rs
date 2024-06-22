@@ -1,4 +1,4 @@
-//! Graph6 file format input and output.
+//! Decoder for graph6 format for graphs.
 
 use crate::{csr::Csr, graph::IndexType, stable_graph::StableUnGraph, Graph, Undirected};
 
@@ -33,8 +33,6 @@ where
         .flat_map(|&byte| get_number_as_bits(byte, 6))
         .collect();
 
-    println!("my order {}", graph_order);
-    println!("matrix {:?}", matrix_bits);
     let matrix = get_edges(graph_order, matrix_bits);
 
     (graph_order, matrix)
@@ -45,7 +43,6 @@ where
     Ix: IndexType,
 {
     let mut edges = vec![];
-    println!("bits {:?}", bits);
 
     let mut bits_i = 0;
     for col in 1..order {

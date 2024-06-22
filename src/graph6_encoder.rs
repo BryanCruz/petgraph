@@ -1,4 +1,4 @@
-//! Graph6 file format input and output.
+//! Encoder for graph6 format for graphs.
 
 use crate::{
     csr::Csr,
