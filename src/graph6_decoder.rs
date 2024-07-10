@@ -1,6 +1,6 @@
 //! Decoder for graph6 format for graphs.
 
-use crate::{csr::Csr, graph::IndexType, stable_graph::StableUnGraph, Graph, Undirected};
+use crate::{csr::Csr, graph::IndexType, Graph, Undirected};
 
 #[cfg(feature = "graphmap")]
 use crate::graphmap::GraphMap;
@@ -12,7 +12,7 @@ use std::hash::BuildHasher;
 use crate::matrix_graph::{MatrixGraph, Nullable};
 
 #[cfg(feature = "stable_graph")]
-use crate::stable_graph::StableGraph;
+use crate::stable_graph::{StableGraph, StableUnGraph};
 
 const N: usize = 63;
 
