@@ -3,7 +3,7 @@
 extern crate petgraph;
 extern crate test;
 
-use petgraph::graph6_decoder::from_graph6_representation;
+use petgraph::graph6::from_graph6_representation;
 use test::Bencher;
 
 #[bench]

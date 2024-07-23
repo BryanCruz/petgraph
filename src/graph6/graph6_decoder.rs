@@ -1,4 +1,4 @@
-//! Decoder for graph6 format for graphs.
+//! [graph6 format](https://users.cecs.anu.edu.au/~bdm/data/formats.txt) decoder for undirected graphs.
 
 use crate::{csr::Csr, graph::IndexType, Graph, Undirected};
 
@@ -16,6 +16,7 @@ use crate::stable_graph::{StableGraph, StableUnGraph};
 
 const N: usize = 63;
 
+/// A graph that can be converted from graph6 format string.
 pub trait FromGraph6 {
     fn from_graph6_string(graph6_string: String) -> Self;
 }

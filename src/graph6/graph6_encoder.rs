@@ -1,4 +1,4 @@
-//! Encoder for graph6 format for graphs.
+//! [graph6 format](https://users.cecs.anu.edu.au/~bdm/data/formats.txt) encoder for undirected graphs.
 
 use crate::{
     csr::Csr,
@@ -21,7 +21,8 @@ use crate::stable_graph::StableGraph;
 
 const N: usize = 63;
 
-pub trait Graph6 {
+/// A graph that can be converted to graph6 format string.
+pub trait ToGraph6 {
     fn graph6_string(self: &Self) -> String;
 }
 
@@ -112,28 +113,28 @@ fn bits_to_ascii(mut bits: Vec<usize>) -> String {
         .collect()
 }
 
-impl<N, E, Ix: IndexType> Graph6 for Graph<N, E, Undirected, Ix> {
+impl<N, E, Ix: IndexType> ToGraph6 for Graph<N, E, Undirected, Ix> {
     fn graph6_string(self: &Self) -> String {
         get_graph6_representation(self)
     }
 }
 
 #[cfg(feature = "stable_graph")]
-impl<N, E, Ix: IndexType> Graph6 for StableGraph<N, E, Undirected, Ix> {
+impl<N, E, Ix: IndexType> ToGraph6 for StableGraph<N, E, Undirected, Ix> {
     fn graph6_string(self: &Self) -> String {
         get_graph6_representation(self)
     }
 }
 
 #[cfg(feature = "graphmap")]
-impl<N: NodeTrait, E, S: BuildHasher> Graph6 for GraphMap<N, E, Undirected, S> {
+impl<N: NodeTrait, E, S: BuildHasher> ToGraph6 for GraphMap<N, E, Undirected, S> {
     fn graph6_string(self: &Self) -> String {
         get_graph6_representation(self)
     }
 }
 
 #[cfg(feature = "matrix_graph")]
-impl<N, E, Null, Ix> Graph6 for MatrixGraph<N, E, Undirected, Null, Ix>
+impl<N, E, Null, Ix> ToGraph6 for MatrixGraph<N, E, Undirected, Null, Ix>
 where
     N: NodeTrait,
     Null: Nullable<Wrapped = E>,
@@ -144,7 +145,7 @@ where
     }
 }
 
-impl<N, E, Ix: IndexType> Graph6 for Csr<N, E, Undirected, Ix> {
+impl<N, E, Ix: IndexType> ToGraph6 for Csr<N, E, Undirected, Ix> {
     fn graph6_string(self: &Self) -> String {
         get_graph6_representation(self)
     }
