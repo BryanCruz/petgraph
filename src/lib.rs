@@ -139,6 +139,7 @@ pub mod csr;
 pub mod dot;
 #[cfg(feature = "generate")]
 pub mod generate;
+pub mod generators;
 pub mod graph6_decoder;
 pub mod graph6_encoder;
 mod graph_impl;
