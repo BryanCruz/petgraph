@@ -27,38 +27,39 @@ pub fn from_graph6_representation<Ix>(graph6_representation: String) -> (usize, 
 where
     Ix: IndexType,
 {
-    let (graph_order_bits, matrix_bits) = get_graph_bits(graph6_representation);
+    let (order_bytes, adj_matrix_bytes) =
+        get_order_bytes_and_adj_matrix_bytes(graph6_representation);
 
-    let graph_order = get_bits_as_decimal(graph_order_bits);
-    let matrix = get_edges(graph_order, matrix_bits);
+    let order_bits = bytes_vector_to_bits_vector(order_bytes);
+    let adj_matrix_bits = bytes_vector_to_bits_vector(adj_matrix_bytes);
 
-    (graph_order, matrix)
+    let graph_order = get_bits_as_decimal(order_bits);
+    let edges = get_edges(graph_order, adj_matrix_bits);
+
+    (graph_order, edges)
 }
 
-// Returns a tuple containing the graph order and its adjacency matrix,
-// both represented by bits vectors.
-fn get_graph_bits(graph6_representation: String) -> (Vec<u8>, Vec<u8>) {
+// Converts a graph6 format string into a vector of bytes, converted from ASCII characters,
+// split into two parts, the first representing the graph order, and the second its adjacency matrix.
+fn get_order_bytes_and_adj_matrix_bytes(graph6_representation: String) -> (Vec<usize>, Vec<usize>) {
     let bytes: Vec<usize> = graph6_representation
         .chars()
         .map(|c| (c as usize) - N)
         .collect();
 
-    let mut order_bytes: Vec<usize> = vec![];
-    let mut matrix_bytes: Vec<usize> = vec![];
+    let mut order_bytes = vec![];
+    let mut adj_matrix_bytes = vec![];
 
     let first_byte = *bytes.first().unwrap();
     if first_byte == N {
         order_bytes.extend_from_slice(&bytes[1..=3]);
-        matrix_bytes.extend_from_slice(&bytes[4..]);
+        adj_matrix_bytes.extend_from_slice(&bytes[4..]);
     } else {
         order_bytes.push(first_byte);
-        matrix_bytes.extend_from_slice(&bytes[1..]);
+        adj_matrix_bytes.extend_from_slice(&bytes[1..]);
     };
 
-    let order_bits = bytes_vector_to_bits_vector(order_bytes);
-    let matrix_bits = bytes_vector_to_bits_vector(matrix_bytes);
-
-    (order_bits, matrix_bits)
+    (order_bytes, adj_matrix_bytes)
 }
 
 // Converts a bytes vector into a bits vector.
