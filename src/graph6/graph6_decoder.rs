@@ -21,47 +21,23 @@ pub trait FromGraph6 {
     fn from_graph6_string(graph6_string: String) -> Self;
 }
 
+/// Converts a graph6 format string into data can be used to construct an undirected graph.
+/// Returns a tuple containing the graph order and its edges.
 pub fn from_graph6_representation<Ix>(graph6_representation: String) -> (usize, Vec<(Ix, Ix)>)
 where
     Ix: IndexType,
 {
-    let (graph_order_bytes, matrix_bytes) = get_graph_bytes(graph6_representation);
+    let (graph_order_bits, matrix_bits) = get_graph_bits(graph6_representation);
 
-    let graph_order = get_graph_order(graph_order_bytes);
-
-    let matrix_bits: Vec<u8> = matrix_bytes
-        .iter()
-        .flat_map(|&byte| get_number_as_bits(byte, 6))
-        .collect();
-
+    let graph_order = get_bits_as_decimal(graph_order_bits);
     let matrix = get_edges(graph_order, matrix_bits);
 
     (graph_order, matrix)
 }
 
-fn get_edges<Ix>(order: usize, bits: Vec<u8>) -> Vec<(Ix, Ix)>
-where
-    Ix: IndexType,
-{
-    let mut edges = vec![];
-
-    let mut bits_i = 0;
-    for col in 1..order {
-        for lin in 0..col {
-            let is_adjacent = bits[bits_i] == 1;
-
-            if is_adjacent {
-                edges.push((Ix::new(lin), Ix::new(col)));
-            };
-
-            bits_i += 1;
-        }
-    }
-
-    edges
-}
-
-fn get_graph_bytes(graph6_representation: String) -> (Vec<usize>, Vec<usize>) {
+// Returns a tuple containing the graph order and its adjacency matrix,
+// both represented by bits vectors.
+fn get_graph_bits(graph6_representation: String) -> (Vec<u8>, Vec<u8>) {
     let bytes: Vec<usize> = graph6_representation
         .chars()
         .map(|c| (c as usize) - N)
@@ -79,18 +55,18 @@ fn get_graph_bytes(graph6_representation: String) -> (Vec<usize>, Vec<usize>) {
         matrix_bytes.extend_from_slice(&bytes[1..]);
     };
 
-    (order_bytes, matrix_bytes)
+    let order_bits = bytes_vector_to_bits_vector(order_bytes);
+    let matrix_bits = bytes_vector_to_bits_vector(matrix_bytes);
+
+    (order_bits, matrix_bits)
 }
 
-fn get_graph_order(bytes: Vec<usize>) -> usize {
-    let bits_str = bytes
+// Converts a bytes vector into a bits vector.
+fn bytes_vector_to_bits_vector(bytes: Vec<usize>) -> Vec<u8> {
+    bytes
         .iter()
         .flat_map(|&byte| get_number_as_bits(byte, 6))
-        .map(|bit| bit.to_string())
-        .collect::<Vec<String>>()
-        .join("");
-
-    usize::from_str_radix(&bits_str, 2).unwrap()
+        .collect()
 }
 
 // Get binary representation of `n` as a vector of bits with `bits_length` length.
@@ -100,6 +76,40 @@ fn get_number_as_bits(n: usize, bits_length: usize) -> Vec<u8> {
         bits.push(((n >> i) & 1) as u8);
     }
     bits
+}
+
+// Convert a bits vector into its decimal representation.
+fn get_bits_as_decimal(bits: Vec<u8>) -> usize {
+    let bits_str = bits
+        .iter()
+        .map(|bit| bit.to_string())
+        .collect::<Vec<String>>()
+        .join("");
+
+    usize::from_str_radix(&bits_str, 2).unwrap()
+}
+
+// Get graph edges from its order and bits vector representation of its adjacency matrix.
+fn get_edges<Ix>(order: usize, adj_matrix_bits: Vec<u8>) -> Vec<(Ix, Ix)>
+where
+    Ix: IndexType,
+{
+    let mut edges = vec![];
+
+    let mut i = 0;
+    for col in 1..order {
+        for lin in 0..col {
+            let is_adjacent = adj_matrix_bits[i] == 1;
+
+            if is_adjacent {
+                edges.push((Ix::new(lin), Ix::new(col)));
+            };
+
+            i += 1;
+        }
+    }
+
+    edges
 }
 
 impl<Ix: IndexType> FromGraph6 for Graph<(), (), Undirected, Ix> {

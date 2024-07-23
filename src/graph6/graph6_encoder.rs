@@ -26,6 +26,8 @@ pub trait ToGraph6 {
     fn graph6_string(self: &Self) -> String;
 }
 
+/// Converts a graph that implements GetAdjacencyMatrix and IntoNodeIdentifers
+/// into a graph6 format string.
 pub fn get_graph6_representation<G>(graph: G) -> String
 where
     G: GetAdjacencyMatrix + IntoNodeIdentifiers,
@@ -69,7 +71,7 @@ where
     return (n, bits);
 }
 
-// Construct graph order as a vector of bits.
+// Converts graph order to a bits vector.
 fn get_graph_order_as_bits(order: usize) -> Vec<usize> {
     let to_convert_to_bits = if order < N {
         vec![(order, 6)]
