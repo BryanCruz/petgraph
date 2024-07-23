@@ -16,7 +16,7 @@ pub fn random_undirected_graph<Ix: IndexType>(
 
     for u in 0..order {
         for v in (u + 1)..order {
-            if rand::random::<f64>() <= p {
+            if rand::random::<f64>() < p {
                 graph.add_edge(nodes[u], nodes[v], ());
             }
         }

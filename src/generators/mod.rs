@@ -1,3 +1,3 @@
-pub use self::random_graph_generator::random_undirected_graph;
+pub use self::random_undirected_graph::random_undirected_graph;
 
-mod random_graph_generator;
+mod random_undirected_graph;
