@@ -13,7 +13,7 @@ use common::{digraph, ungraph};
 
 use petgraph::{
     algo::{min_spanning_tree, min_spanning_tree_prim},
-    graph6_decoder::FromGraph6,
+    graph6::FromGraph6,
     visit::{Data, IntoEdgeReferences, IntoEdges, IntoNodeReferences, NodeIndexable},
     Graph, Undirected,
 };
