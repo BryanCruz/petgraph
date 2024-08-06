@@ -1,7 +1,6 @@
 use petgraph::{
     csr::Csr,
-    graph6_decoder::{from_graph6_representation, FromGraph6},
-    graph6_encoder::{get_graph6_representation, Graph6},
+    graph6::{from_graph6_representation, get_graph6_representation, FromGraph6, ToGraph6},
     Graph, Undirected,
 };
 
