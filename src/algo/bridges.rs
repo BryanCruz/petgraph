@@ -2,6 +2,7 @@ use std::{collections::HashMap, hash::Hash};
 
 use super::IntoNeighbors;
 
+#[derive(Debug)]
 pub struct BridgesSearch<N> {
     /// The stack of nodes to visit
     pub color: HashMap<N, Color>,
@@ -13,7 +14,7 @@ pub struct BridgesSearch<N> {
     pub edges_stack: Vec<(N, N)>,
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Color {
     Gray,
     Black,
@@ -36,6 +37,10 @@ where
         let mut edges_stack = Vec::new();
 
         while let Some(a) = dfs_stack.pop() {
+            if color.contains_key(&a) {
+                continue;
+            }
+
             let cnt = pre.len();
             pre.insert(a, cnt);
             low.insert(a, cnt);
