@@ -54,7 +54,7 @@ where
     G: IntoNeighbors<NodeId = N> + IntoNodeIdentifiers,
 {
     let start = g.node_identifiers().next().unwrap();
-    let mut bridges_search = BridgesSearch::new(start, g);
+    let mut bridges_search = BridgesSearch::new(start);
 
     while let Some(edge) = bridges_search.next(g) {
         std::hint::black_box(edge);
