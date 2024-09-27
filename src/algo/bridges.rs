@@ -21,7 +21,7 @@ pub enum Color {
 
 impl<'a, N> BridgesSearch<'a, N>
 where
-    N: Hash + Eq + Copy + Debug,
+    N: Hash + Eq + Copy,
 {
     pub fn new(start: N) -> Self {
         let mut edges_stack = Vec::new();
