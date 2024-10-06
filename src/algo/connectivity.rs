@@ -16,7 +16,9 @@ pub struct DfsSearch<'a, N, DfsSearchType> {
     pub neighbors: HashMap<N, Box<dyn Iterator<Item = N> + 'a>>,
     /// The stack of edges to be processed, it simulates a DFS search.
     pub edges_stack: Vec<(N, N)>,
+    subcomponents_count: HashMap<N, usize>,
     search_type: PhantomData<DfsSearchType>,
+    root: N,
 }
 
 /// Marker type for bridges search.
@@ -50,6 +52,8 @@ where
             edges_stack,
             neighbors: HashMap::new(),
             search_type: PhantomData,
+            root: start,
+            subcomponents_count: HashMap::new(),
         }
     }
 
@@ -70,6 +74,7 @@ where
 {
     pub fn new_articulation_points_search(start: N) -> Self {
         let mut edges_stack = Vec::new();
+        // Start search with Dummy Edge
         edges_stack.push((start, start));
         DfsSearch {
             color: HashMap::new(),
@@ -78,6 +83,8 @@ where
             edges_stack,
             neighbors: HashMap::new(),
             search_type: PhantomData,
+            root: start,
+            subcomponents_count: HashMap::new(),
         }
     }
 
@@ -130,6 +137,7 @@ where
         } else {
             dfs_search.edges_stack.pop();
             if parent == a {
+                // Dummy Edge
                 return None;
             }
             let low_parent = *dfs_search.low.get(&parent).unwrap();
@@ -139,11 +147,25 @@ where
             if low_a < low_parent {
                 dfs_search.low.insert(parent, low_a);
             }
-            if bridges_search && low_a == pre_a {
-                return Some((parent, a));
-            }
-            if !bridges_search && low_a >= pre_parent {
-                return Some((parent, parent));
+            if bridges_search {
+                if low_a == pre_a {
+                    return Some((parent, a));
+                }
+            } else {
+                if low_a >= pre_parent {
+                    let subcomponents_count =
+                        dfs_search.subcomponents_count.entry(parent).or_insert(0);
+                    *subcomponents_count += 1;
+
+                    let is_root_articulation_point =
+                        dfs_search.root == parent && *subcomponents_count == 2;
+                    let is_standard_articulation_point =
+                        dfs_search.root != parent && *subcomponents_count == 1;
+
+                    if is_root_articulation_point || is_standard_articulation_point {
+                        return Some((parent, parent));
+                    }
+                }
             }
         }
     }
