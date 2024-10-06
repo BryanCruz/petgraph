@@ -181,3 +181,36 @@ fn articulation_points_test_b_2() {
         assert_eq!(expected_articulation_ponts, articulation_points);
     }
 }
+
+#[test]
+// A - B - C
+// | /   \ |
+// D      E
+fn articulation_points_test_c_all_starts() {
+    let mut gr = Graph::new_undirected();
+    let a = gr.add_node("A");
+    let b = gr.add_node("B");
+    let c = gr.add_node("C");
+    let d = gr.add_node("D");
+    let e = gr.add_node("E");
+
+    gr.add_edge(a, b, 1.);
+    gr.add_edge(a, d, 2.);
+    gr.add_edge(b, c, 3.);
+    gr.add_edge(b, d, 4.);
+    gr.add_edge(b, e, 4.);
+    gr.add_edge(c, e, 5.);
+
+    println!("{}", Dot::new(&gr));
+
+    let nodes = vec![a, b, c, d, e];
+    let expected_articulation_ponts = HashSet::from([b]);
+    for start in nodes {
+        let mut iter = DfsSearch::new_articulation_points_search(start);
+        let mut articulation_points = HashSet::new();
+        while let Some(articulation_point) = iter.next(&gr) {
+            articulation_points.insert(articulation_point);
+        }
+        assert_eq!(expected_articulation_ponts, articulation_points);
+    }
+}
