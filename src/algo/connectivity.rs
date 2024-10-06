@@ -1,8 +1,8 @@
-use std::{collections::HashMap, fmt::Debug, hash::Hash};
+use std::{collections::HashMap, fmt::Debug, hash::Hash, marker::PhantomData};
 
 use super::IntoNeighbors;
 
-pub struct BridgesSearch<'a, N> {
+pub struct DfsSearch<'a, N, DfsSearchType> {
     /// The map of colors of each node.
     /// If it hasn't any color it means it wasn't visited yet,
     /// if it has gray color it means it is being processed and
@@ -16,7 +16,16 @@ pub struct BridgesSearch<'a, N> {
     pub neighbors: HashMap<N, Box<dyn Iterator<Item = N> + 'a>>,
     /// The stack of edges to be processed, it simulates a DFS search.
     pub edges_stack: Vec<(N, N)>,
+    search_type: PhantomData<DfsSearchType>,
 }
+
+/// Marker type for bridges search.
+#[derive(Clone, Copy, Debug)]
+pub enum BridgesSearch {}
+
+/// Marker type for articulation points search.
+#[derive(Clone, Copy, Debug)]
+pub enum ArticulationPointsSearch {}
 
 #[derive(Debug, PartialEq)]
 pub enum Color {
@@ -27,19 +36,20 @@ pub enum Color {
 /// BridgesSearch implementation.
 /// Each call to `next` should return a graph's bridge (cut edge) if it exists,
 /// otherwise returns `None`.
-impl<'a, N> BridgesSearch<'a, N>
+impl<'a, N> DfsSearch<'a, N, BridgesSearch>
 where
     N: Hash + Eq + Copy,
 {
-    pub fn new(start: N) -> Self {
+    pub fn new_bridges_search(start: N) -> Self {
         let mut edges_stack = Vec::new();
         edges_stack.push((start, start));
-        BridgesSearch {
+        DfsSearch {
             color: HashMap::new(),
             pre: HashMap::new(),
             low: HashMap::new(),
             edges_stack,
             neighbors: HashMap::new(),
+            search_type: PhantomData,
         }
     }
 

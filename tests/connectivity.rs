@@ -1,4 +1,4 @@
-use petgraph::{algo::bridges::BridgesSearch, dot::Dot, Graph};
+use petgraph::{algo::connectivity::DfsSearch, dot::Dot, Graph};
 
 #[test]
 fn bridges_test_a() {
@@ -17,7 +17,7 @@ fn bridges_test_a() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut bridges_iter = BridgesSearch::new(a);
+    let mut bridges_iter = DfsSearch::new_bridges_search(a);
     println!("{:#?}", bridges_iter.pre);
     println!("{:#?}", bridges_iter.color);
 
@@ -54,7 +54,7 @@ fn bridges_test_b() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut bridges_iter = BridgesSearch::new(a);
+    let mut bridges_iter = DfsSearch::new_bridges_search(a);
     println!("{:#?}", bridges_iter.pre);
 
     let e_f = bridges_iter.next(&gr);
@@ -92,7 +92,7 @@ fn bridges_test_c_1() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut bridges_iter = BridgesSearch::new(a);
+    let mut bridges_iter = DfsSearch::new_bridges_search(a);
     println!("{:#?}", bridges_iter.pre);
 
     let e_f = bridges_iter.next(&gr);

@@ -12,7 +12,7 @@ mod common;
 use common::ungraph;
 
 use petgraph::{
-    algo::bridges::BridgesSearch,
+    algo::connectivity::DfsSearch,
     graph6::FromGraph6,
     visit::{IntoNeighbors, IntoNodeIdentifiers},
     Graph, Undirected,
@@ -54,7 +54,7 @@ where
     G: IntoNeighbors<NodeId = N> + IntoNodeIdentifiers,
 {
     let start = g.node_identifiers().next().unwrap();
-    let mut bridges_search = BridgesSearch::new(start);
+    let mut bridges_search = DfsSearch::new_bridges_search(start);
 
     while let Some(edge) = bridges_search.next(g) {
         std::hint::black_box(edge);
