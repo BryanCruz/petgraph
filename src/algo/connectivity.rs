@@ -57,45 +57,96 @@ where
     where
         G: 'a + IntoNeighbors<NodeId = N>,
     {
-        while !self.edges_stack.is_empty() {
-            let (parent, a) = *self.edges_stack.last().unwrap();
+        return next_edge(self, graph, true);
+    }
+}
 
-            if self.color.get(&a) == None {
-                let cnt = self.color.len();
-                self.color.insert(a, Color::Gray);
-                self.pre.insert(a, cnt);
-                self.low.insert(a, cnt);
-                self.neighbors.insert(a, Box::new(graph.neighbors(a)));
-            }
+/// ArticulationPointsSearch implementation.
+/// Each call to `next` should return a graph's articulation point (cut vertex) if it exists,
+/// otherwise returns `None`.
+impl<'a, N> DfsSearch<'a, N, ArticulationPointsSearch>
+where
+    N: Hash + Eq + Copy,
+{
+    pub fn new_articulation_points_search(start: N) -> Self {
+        let mut edges_stack = Vec::new();
+        edges_stack.push((start, start));
+        DfsSearch {
+            color: HashMap::new(),
+            pre: HashMap::new(),
+            low: HashMap::new(),
+            edges_stack,
+            neighbors: HashMap::new(),
+            search_type: PhantomData,
+        }
+    }
 
-            if self.color.get(&a) == Some(&Color::Gray) {
-                if let Some(b) = (*self.neighbors.get_mut(&a).unwrap()).next() {
-                    if self.color.get(&b) == None {
-                        self.edges_stack.push((a, b));
-                    } else if b != parent {
-                        let low_a = *self.low.get(&a).unwrap();
-                        let pre_b = *self.pre.get(&b).unwrap();
-                        if low_a > pre_b {
-                            self.low.insert(a, pre_b);
-                        }
-                    }
-                } else {
-                    self.color.insert(a, Color::Black);
-                }
-            } else {
-                self.edges_stack.pop();
-                let low_parent = *self.low.get(&parent).unwrap();
-                let low_a = *self.low.get(&a).unwrap();
-                let pre_a = *self.pre.get(&a).unwrap();
-                if low_a < low_parent {
-                    self.low.insert(parent, low_a);
-                }
-                if low_a == pre_a && parent != a {
-                    return Some((parent, a));
-                }
-            }
+    pub fn next<G>(&mut self, graph: G) -> Option<N>
+    where
+        G: 'a + IntoNeighbors<NodeId = N>,
+    {
+        if let Some((next_vertex, _)) = next_edge(self, graph, false) {
+            Some(next_vertex)
+        } else {
+            None
+        }
+    }
+}
+
+fn next_edge<'a, N, G, SearchType>(
+    dfs_search: &mut DfsSearch<'a, N, SearchType>,
+    graph: G,
+    bridges_search: bool,
+) -> Option<(N, N)>
+where
+    N: Hash + Eq + Copy,
+    G: 'a + IntoNeighbors<NodeId = N>,
+{
+    while !dfs_search.edges_stack.is_empty() {
+        let (parent, a) = *dfs_search.edges_stack.last().unwrap();
+
+        if dfs_search.color.get(&a) == None {
+            let cnt = dfs_search.color.len();
+            dfs_search.color.insert(a, Color::Gray);
+            dfs_search.pre.insert(a, cnt);
+            dfs_search.low.insert(a, cnt);
+            dfs_search.neighbors.insert(a, Box::new(graph.neighbors(a)));
         }
 
-        None
+        if dfs_search.color.get(&a) == Some(&Color::Gray) {
+            if let Some(b) = (*dfs_search.neighbors.get_mut(&a).unwrap()).next() {
+                if dfs_search.color.get(&b) == None {
+                    dfs_search.edges_stack.push((a, b));
+                } else if b != parent {
+                    let low_a = *dfs_search.low.get(&a).unwrap();
+                    let pre_b = *dfs_search.pre.get(&b).unwrap();
+                    if low_a > pre_b {
+                        dfs_search.low.insert(a, pre_b);
+                    }
+                }
+            } else {
+                dfs_search.color.insert(a, Color::Black);
+            }
+        } else {
+            dfs_search.edges_stack.pop();
+            if parent == a {
+                return None;
+            }
+            let low_parent = *dfs_search.low.get(&parent).unwrap();
+            let low_a = *dfs_search.low.get(&a).unwrap();
+            let pre_parent = *dfs_search.pre.get(&parent).unwrap();
+            let pre_a = *dfs_search.pre.get(&a).unwrap();
+            if low_a < low_parent {
+                dfs_search.low.insert(parent, low_a);
+            }
+            if bridges_search && low_a == pre_a {
+                return Some((parent, a));
+            }
+            if !bridges_search && low_a >= pre_parent {
+                return Some((parent, parent));
+            }
+        }
     }
+
+    None
 }
