@@ -135,7 +135,7 @@ fn cut_edges_test_c_all_starts() {
 // *A - B - C - D
 //          | /
 //          E
-fn articulation_points_test_a() {
+fn cut_vertices_test_a() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -166,7 +166,7 @@ fn articulation_points_test_a() {
 // *A - B - C - D
 //          | /
 //      F - E
-fn articulation_points_test_b() {
+fn cut_vertices_test_b() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -200,7 +200,7 @@ fn articulation_points_test_b() {
 // *A - B - C - D
 //          | /
 //      F - E
-fn articulation_points_test_b_all_starts() {
+fn cut_vertices_test_b_all_starts() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -219,15 +219,15 @@ fn articulation_points_test_b_all_starts() {
     println!("{}", Dot::new(&gr));
 
     let nodes = vec![a, b, c, d, e, f];
-    let expected_articulation_ponts = HashSet::from([b, c, e]);
+    let expected_cut_vertices = HashSet::from([b, c, e]);
     for start in nodes {
         let mut iter = CutVerticesSearch::new(start);
-        let mut articulation_points = HashSet::new();
-        while let Some(articulation_point) = iter.next(&gr) {
-            articulation_points.insert(articulation_point);
+        let mut cut_vertices = HashSet::new();
+        while let Some(cut_vertex) = iter.next(&gr) {
+            cut_vertices.insert(cut_vertex);
         }
 
-        assert_eq!(expected_articulation_ponts, articulation_points);
+        assert_eq!(expected_cut_vertices, cut_vertices);
     }
 }
 
@@ -235,7 +235,7 @@ fn articulation_points_test_b_all_starts() {
 // A - B - C
 // | /   \ |
 // D      E
-fn articulation_points_test_c_all_starts() {
+fn cut_vertices_test_c_all_starts() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -253,14 +253,14 @@ fn articulation_points_test_c_all_starts() {
     println!("{}", Dot::new(&gr));
 
     let nodes = vec![a, b, c, d, e];
-    let expected_articulation_ponts = HashSet::from([b]);
+    let expected_cut_vertices = HashSet::from([b]);
     for start in nodes {
         let mut iter = CutVerticesSearch::new(start);
-        let mut articulation_points = HashSet::new();
-        while let Some(articulation_point) = iter.next(&gr) {
-            articulation_points.insert(articulation_point);
+        let mut cut_vertices = HashSet::new();
+        while let Some(cut_vertex) = iter.next(&gr) {
+            cut_vertices.insert(cut_vertex);
         }
-        assert_eq!(expected_articulation_ponts, articulation_points);
+        assert_eq!(expected_cut_vertices, cut_vertices);
     }
 }
 
@@ -270,7 +270,7 @@ fn articulation_points_test_c_all_starts() {
 //     C       G - H
 //             | /
 //             I
-fn articulation_points_test_d_all_starts() {
+fn cut_vertices_test_d_all_starts() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -296,13 +296,13 @@ fn articulation_points_test_d_all_starts() {
     println!("{}", Dot::new(&gr));
 
     let nodes = vec![a, b, c, d, e];
-    let expected_articulation_ponts = HashSet::from([b, d, e, g]);
+    let expected_cut_vertices = HashSet::from([b, d, e, g]);
     for start in nodes {
         let mut iter = CutVerticesSearch::new(start);
-        let mut articulation_points = HashSet::new();
-        while let Some(articulation_point) = iter.next(&gr) {
-            articulation_points.insert(articulation_point);
+        let mut cut_vertices = HashSet::new();
+        while let Some(cut_vertex) = iter.next(&gr) {
+            cut_vertices.insert(cut_vertex);
         }
-        assert_eq!(expected_articulation_ponts, articulation_points);
+        assert_eq!(expected_cut_vertices, cut_vertices);
     }
 }
