@@ -17,7 +17,10 @@ pub struct CutVerticesSearch<'a, N> {
     pub neighbors: HashMap<N, Box<dyn Iterator<Item = N> + 'a>>,
     /// The stack of edges to be processed, it simulates a DFS search.
     pub edges_stack: Vec<(N, N)>,
+    /// The map of subcomponents count of each node. Used to identify if root
+    /// is a cut vertex and to avoid returning duplicate cut vertices.
     subcomponents_count: HashMap<N, usize>,
+    /// The root of the Dfs Tree search. Used to identify if root is a cut vertex.
     root: N,
 }
 
