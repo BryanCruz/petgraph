@@ -1,12 +1,12 @@
 use std::collections::HashSet;
 
-use petgraph::{algo::connectivity::BridgesSearch, dot::Dot, Graph};
+use petgraph::{algo::connectivity::CutEdgesSearch, dot::Dot, Graph};
 
 #[test]
 // *A - B - C - D
 //          | /
 //          E
-fn bridges_test_a() {
+fn cut_edges_test_a() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -22,7 +22,7 @@ fn bridges_test_a() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut iter = BridgesSearch::new_bridges_search(a);
+    let mut iter = CutEdgesSearch::new(a);
     println!("{:#?}", iter.pre);
     println!("{:#?}", iter.color);
 
@@ -44,7 +44,7 @@ fn bridges_test_a() {
 // *A - B - C - D
 //          | /
 //      F - E
-fn bridges_test_b() {
+fn cut_edges_test_b() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -62,7 +62,7 @@ fn bridges_test_b() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut iter = BridgesSearch::new_bridges_search(a);
+    let mut iter = CutEdgesSearch::new(a);
     println!("{:#?}", iter.pre);
 
     let e_f = iter.next(&gr);
@@ -87,7 +87,7 @@ fn bridges_test_b() {
 //     C       G - H
 //             | /
 //             I
-fn bridges_test_c_all_starts() {
+fn cut_edges_test_c_all_starts() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -116,7 +116,7 @@ fn bridges_test_c_all_starts() {
     let expected_bridges = [(a, b), (d, e), (d, g), (e, f)];
 
     for start in nodes {
-        let mut iter = BridgesSearch::new_bridges_search(start);
+        let mut iter = CutEdgesSearch::new(start);
         let mut bridges = HashSet::new();
         while let Some(bridge) = iter.next(&gr) {
             bridges.insert(bridge);

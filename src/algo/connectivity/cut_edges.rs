@@ -3,7 +3,7 @@ use std::{collections::HashMap, hash::Hash};
 use super::Color;
 use crate::algo::IntoNeighbors;
 
-pub struct BridgesSearch<'a, N> {
+pub struct CutEdgesSearch<'a, N> {
     /// The map of colors of each node.
     /// If it hasn't any color it means it wasn't visited yet,
     /// if it has gray color it means it is being processed and
@@ -19,17 +19,17 @@ pub struct BridgesSearch<'a, N> {
     pub edges_stack: Vec<(N, N)>,
 }
 
-/// Each call to `next` should return a graph's bridge (cut edge) if it exists,
+/// Each call to `next` should return a graph's cut edge (bridge) if it exists,
 /// otherwise returns `None`.
-impl<'a, N> BridgesSearch<'a, N>
+impl<'a, N> CutEdgesSearch<'a, N>
 where
     N: Hash + Eq + Copy,
 {
-    pub fn new_bridges_search(start: N) -> Self {
+    pub fn new(start: N) -> Self {
         let mut edges_stack = Vec::new();
         // Initial dummy edge
         edges_stack.push((start, start));
-        BridgesSearch {
+        CutEdgesSearch {
             color: HashMap::new(),
             pre: HashMap::new(),
             low: HashMap::new(),

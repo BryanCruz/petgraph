@@ -1,4 +1,4 @@
-pub use cut_edges::BridgesSearch;
+pub use cut_edges::CutEdgesSearch;
 
 mod cut_edges;
 
