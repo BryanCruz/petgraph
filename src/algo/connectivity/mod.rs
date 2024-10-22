@@ -3,6 +3,7 @@ pub use cut_vertices::CutVerticesSearch;
 
 mod cut_edges;
 mod cut_vertices;
+mod connected_components;
 
 /// Marker type for bridges search.
 #[derive(Debug, PartialEq)]
