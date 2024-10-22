@@ -62,7 +62,7 @@ fn cut_edges_test_b() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut iter = CutEdgesSearch::new(a);
+    let mut iter = CutEdgesSearch::new(&gr);
     println!("{:#?}", iter.pre);
 
     let e_f = iter.next(&gr);

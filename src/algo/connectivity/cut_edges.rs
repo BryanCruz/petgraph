@@ -1,7 +1,7 @@
 use std::{collections::HashMap, hash::Hash};
 
 use super::Color;
-use crate::algo::IntoNeighbors;
+use crate::{algo::IntoNeighbors, visit::IntoNodeIdentifiers};
 
 pub struct CutEdgesSearch<'a, N> {
     /// The map of colors of each node.
@@ -25,10 +25,19 @@ impl<'a, N> CutEdgesSearch<'a, N>
 where
     N: Hash + Eq + Copy,
 {
-    pub fn new(start: N) -> Self {
-        let mut edges_stack = Vec::new();
-        // Initial dummy edge
-        edges_stack.push((start, start));
+    pub fn new<G>(graph: G) -> Self
+    where
+        G: IntoNodeIdentifiers<NodeId = N>,
+    {
+        let edges_stack = if let Some(start) = graph.node_identifiers().next() {
+            // Initial dummy edge
+            let mut edges_stack = Vec::new();
+            edges_stack.push((start, start));
+            edges_stack
+        } else {
+            Vec::new()
+        };
+
         CutEdgesSearch {
             color: HashMap::new(),
             pre: HashMap::new(),
