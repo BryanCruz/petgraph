@@ -98,8 +98,7 @@ where
     N: Hash + Eq + Copy,
     G: IntoNeighbors<NodeId = N> + IntoNodeIdentifiers,
 {
-    let start = g.node_identifiers().next().unwrap();
-    let mut cut_edges_search = CutEdgesSearch::new(start);
+    let mut cut_edges_search = CutEdgesSearch::new(g);
 
     while let Some(edge) = cut_edges_search.next(g) {
         std::hint::black_box(edge);
@@ -111,8 +110,7 @@ where
     N: Hash + Eq + Copy,
     G: IntoNeighbors<NodeId = N> + IntoNodeIdentifiers,
 {
-    let start = g.node_identifiers().next().unwrap();
-    let mut cut_vertices_search = CutVerticesSearch::new(start);
+    let mut cut_vertices_search = CutVerticesSearch::new(g);
 
     while let Some(node) = cut_vertices_search.next(g) {
         std::hint::black_box(node);

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, hash::Hash};
 
 use super::Color;
-use crate::algo::IntoNeighbors;
+use crate::{algo::IntoNeighbors, visit::IntoNodeIdentifiers};
 
 pub struct CutVerticesSearch<'a, N> {
     /// The map of colors of each node.
@@ -21,7 +21,7 @@ pub struct CutVerticesSearch<'a, N> {
     /// is a cut vertex and to avoid returning duplicate cut vertices.
     subcomponents_count: HashMap<N, usize>,
     /// The root of the Dfs Tree search. Used to identify if root is a cut vertex.
-    root: N,
+    root: Option<N>,
 }
 
 /// Each call to `next` should return a graph's cut vertex (articulation point)
@@ -30,17 +30,28 @@ impl<'a, N> CutVerticesSearch<'a, N>
 where
     N: Hash + Eq + Copy,
 {
-    pub fn new(start: N) -> Self {
-        let mut edges_stack = Vec::new();
-        // Initial dummy edge
-        edges_stack.push((start, start));
+    pub fn new<G>(graph: G) -> Self
+    where
+        G: IntoNodeIdentifiers<NodeId = N>,
+    {
+        let root = graph.node_identifiers().next();
+
+        let edges_stack = if let Some(start) = root {
+            // Initial dummy edge
+            let mut edges_stack = Vec::new();
+            edges_stack.push((start, start));
+            edges_stack
+        } else {
+            Vec::new()
+        };
+
         CutVerticesSearch {
             color: HashMap::new(),
             pre: HashMap::new(),
             low: HashMap::new(),
             edges_stack,
             neighbors: HashMap::new(),
-            root: start,
+            root,
             subcomponents_count: HashMap::new(),
         }
     }
@@ -91,9 +102,9 @@ where
                     *subcomponents_count += 1;
 
                     let is_root_articulation_point =
-                        self.root == parent && *subcomponents_count == 2;
+                        self.root == Some(parent) && *subcomponents_count == 2;
                     let is_standard_articulation_point =
-                        self.root != parent && *subcomponents_count == 1;
+                        self.root != Some(parent) && *subcomponents_count == 1;
 
                     if is_root_articulation_point || is_standard_articulation_point {
                         return Some(parent);
