@@ -1,6 +1,41 @@
 use std::collections::HashSet;
 
-use petgraph::{algo::connectivity::CutEdgesSearch, dot::Dot, Graph};
+use petgraph::{algo::connectivity::CutEdgesSearch, dot::Dot, Graph, Undirected};
+
+#[test]
+fn cut_edges_test_empty() {
+    let gr: Graph<(), (), Undirected> = Graph::new_undirected();
+
+    let mut iter = CutEdgesSearch::new(&gr);
+
+    assert_eq!(iter.next(&gr), None);
+    assert_eq!(iter.next(&gr), None);
+}
+
+#[test]
+fn cut_edges_test_k1() {
+    let mut gr: Graph<&str, (), Undirected> = Graph::new_undirected();
+    gr.add_node("A");
+
+    let mut iter = CutEdgesSearch::new(&gr);
+
+    assert_eq!(iter.next(&gr), None);
+    assert_eq!(iter.next(&gr), None);
+}
+
+#[test]
+fn cut_edges_test_k2() {
+    let mut gr = Graph::new_undirected();
+    let a = gr.add_node("A");
+    let b = gr.add_node("B");
+
+    gr.add_edge(a, b, 1.);
+
+    let mut iter = CutEdgesSearch::new(&gr);
+
+    assert_eq!(iter.next(&gr), Some((a, b)));
+    assert_eq!(iter.next(&gr), None);
+}
 
 #[test]
 // A - B - C - D
