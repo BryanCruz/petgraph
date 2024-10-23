@@ -121,12 +121,14 @@ fn cut_edges_test_c() {
     for (a, b) in expected_bridges {
         assert!(bridges.contains(&(a, b)) || bridges.contains(&(b, a)))
     }
+
+    assert_eq!(iter.next(&gr), None);
 }
 
 #[test]
-// *A - B - C - D
-//          | /
-//          E
+// A - B - C - D
+//         | /
+//         E
 fn cut_vertices_test_a() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
@@ -143,21 +145,22 @@ fn cut_vertices_test_a() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut iter = CutVerticesSearch::new(a);
-    println!("{:#?}", iter.pre);
-    println!("{:#?}", iter.color);
+    let expected_cut_vertices = HashSet::from([b, c]);
+    let mut iter = CutVerticesSearch::new(&gr);
+    let mut cut_vertices = HashSet::new();
+    while let Some(cut_vertex) = iter.next(&gr) {
+        cut_vertices.insert(cut_vertex);
+    }
 
-    assert_eq!(iter.next(&gr), Some(c));
-    assert_eq!(iter.next(&gr), Some(b));
+    assert_eq!(expected_cut_vertices, cut_vertices);
 
-    assert_eq!(iter.next(&gr), None);
     assert_eq!(iter.next(&gr), None);
 }
 
 #[test]
-// *A - B - C - D
-//          | /
-//      F - E
+// A - B - C - D
+//         | /
+//     F - E
 fn cut_vertices_test_b() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
@@ -176,58 +179,23 @@ fn cut_vertices_test_b() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut iter = CutVerticesSearch::new(a);
-    println!("{:#?}", iter.pre);
-    println!("{:#?}", iter.color);
-
-    assert_eq!(iter.next(&gr), Some(e));
-    assert_eq!(iter.next(&gr), Some(c));
-    assert_eq!(iter.next(&gr), Some(b));
-
-    assert_eq!(iter.next(&gr), None);
-    assert_eq!(iter.next(&gr), None);
-}
-
-#[test]
-// *A - B - C - D
-//          | /
-//      F - E
-fn cut_vertices_test_b_all_starts() {
-    let mut gr = Graph::new_undirected();
-    let a = gr.add_node("A");
-    let b = gr.add_node("B");
-    let c = gr.add_node("C");
-    let d = gr.add_node("D");
-    let e = gr.add_node("E");
-    let f = gr.add_node("F");
-
-    gr.add_edge(a, b, 1.);
-    gr.add_edge(b, c, 2.);
-    gr.add_edge(c, d, 3.);
-    gr.add_edge(c, e, 4.);
-    gr.add_edge(d, e, 5.);
-    gr.add_edge(e, f, 6.);
-
-    println!("{}", Dot::new(&gr));
-
-    let nodes = vec![a, b, c, d, e, f];
     let expected_cut_vertices = HashSet::from([b, c, e]);
-    for start in nodes {
-        let mut iter = CutVerticesSearch::new(start);
-        let mut cut_vertices = HashSet::new();
-        while let Some(cut_vertex) = iter.next(&gr) {
-            cut_vertices.insert(cut_vertex);
-        }
-
-        assert_eq!(expected_cut_vertices, cut_vertices);
+    let mut iter = CutVerticesSearch::new(&gr);
+    let mut cut_vertices = HashSet::new();
+    while let Some(cut_vertex) = iter.next(&gr) {
+        cut_vertices.insert(cut_vertex);
     }
+
+    assert_eq!(expected_cut_vertices, cut_vertices);
+
+    assert_eq!(iter.next(&gr), None);
 }
 
 #[test]
 // A - B - C
 // | /   \ |
 // D      E
-fn cut_vertices_test_c_all_starts() {
+fn cut_vertices_test_c() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -244,16 +212,15 @@ fn cut_vertices_test_c_all_starts() {
 
     println!("{}", Dot::new(&gr));
 
-    let nodes = vec![a, b, c, d, e];
     let expected_cut_vertices = HashSet::from([b]);
-    for start in nodes {
-        let mut iter = CutVerticesSearch::new(start);
-        let mut cut_vertices = HashSet::new();
-        while let Some(cut_vertex) = iter.next(&gr) {
-            cut_vertices.insert(cut_vertex);
-        }
-        assert_eq!(expected_cut_vertices, cut_vertices);
+    let mut iter = CutVerticesSearch::new(&gr);
+    let mut cut_vertices = HashSet::new();
+    while let Some(cut_vertex) = iter.next(&gr) {
+        cut_vertices.insert(cut_vertex);
     }
+    assert_eq!(expected_cut_vertices, cut_vertices);
+
+    assert_eq!(iter.next(&gr), None);
 }
 
 #[test]
@@ -262,7 +229,7 @@ fn cut_vertices_test_c_all_starts() {
 //     C       G - H
 //             | /
 //             I
-fn cut_vertices_test_d_all_starts() {
+fn cut_vertices_test_d() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -287,14 +254,13 @@ fn cut_vertices_test_d_all_starts() {
 
     println!("{}", Dot::new(&gr));
 
-    let nodes = vec![a, b, c, d, e];
     let expected_cut_vertices = HashSet::from([b, d, e, g]);
-    for start in nodes {
-        let mut iter = CutVerticesSearch::new(start);
-        let mut cut_vertices = HashSet::new();
-        while let Some(cut_vertex) = iter.next(&gr) {
-            cut_vertices.insert(cut_vertex);
-        }
-        assert_eq!(expected_cut_vertices, cut_vertices);
+    let mut iter = CutVerticesSearch::new(&gr);
+    let mut cut_vertices = HashSet::new();
+    while let Some(cut_vertex) = iter.next(&gr) {
+        cut_vertices.insert(cut_vertex);
     }
+    assert_eq!(expected_cut_vertices, cut_vertices);
+
+    assert_eq!(iter.next(&gr), None);
 }
