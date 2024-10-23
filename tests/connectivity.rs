@@ -3,9 +3,9 @@ use std::collections::HashSet;
 use petgraph::{algo::connectivity::CutEdgesSearch, dot::Dot, Graph};
 
 #[test]
-// *A - B - C - D
-//          | /
-//          E
+// A - B - C - D
+//         | /
+//         E
 fn cut_edges_test_a() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
@@ -22,28 +22,26 @@ fn cut_edges_test_a() {
 
     println!("{}", Dot::new(&gr));
 
-    let mut iter = CutEdgesSearch::new(a);
-    println!("{:#?}", iter.pre);
-    println!("{:#?}", iter.color);
+    let expected_bridges = [(a, b), (b, c)];
 
-    let b_c = iter.next(&gr);
-    println!("{:#?}", iter.pre);
-    println!("{:#?}", iter.color);
-    assert_eq!(b_c, Some((b, c)));
+    let mut iter = CutEdgesSearch::new(&gr);
+    let mut bridges = HashSet::new();
+    while let Some(bridge) = iter.next(&gr) {
+        bridges.insert(bridge);
+    }
 
-    let a_b = iter.next(&gr);
-    println!("{:#?}", iter.pre);
-    println!("{:#?}", iter.color);
-    assert_eq!(a_b, Some((a, b)));
+    assert_eq!(bridges.len(), expected_bridges.len());
+    for (a, b) in expected_bridges {
+        assert!(bridges.contains(&(a, b)) || bridges.contains(&(b, a)))
+    }
 
-    assert_eq!(iter.next(&gr), None);
     assert_eq!(iter.next(&gr), None);
 }
 
 #[test]
-// *A - B - C - D
-//          | /
-//      F - E
+// A - B - C - D
+//         | /
+//     F - E
 fn cut_edges_test_b() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
@@ -62,22 +60,19 @@ fn cut_edges_test_b() {
 
     println!("{}", Dot::new(&gr));
 
+    let expected_bridges = [(a, b), (b, c), (e, f)];
+
     let mut iter = CutEdgesSearch::new(&gr);
-    println!("{:#?}", iter.pre);
+    let mut bridges = HashSet::new();
+    while let Some(bridge) = iter.next(&gr) {
+        bridges.insert(bridge);
+    }
 
-    let e_f = iter.next(&gr);
-    println!("{:#?}", iter.pre);
-    assert_eq!(e_f, Some((e, f)));
+    assert_eq!(bridges.len(), expected_bridges.len());
+    for (a, b) in expected_bridges {
+        assert!(bridges.contains(&(a, b)) || bridges.contains(&(b, a)))
+    }
 
-    let b_c = iter.next(&gr);
-    println!("{:#?}", iter.pre);
-    assert_eq!(b_c, Some((b, c)));
-
-    let a_b = iter.next(&gr);
-    println!("{:#?}", iter.pre);
-    assert_eq!(a_b, Some((a, b)));
-
-    assert_eq!(iter.next(&gr), None);
     assert_eq!(iter.next(&gr), None);
 }
 
@@ -87,7 +82,7 @@ fn cut_edges_test_b() {
 //     C       G - H
 //             | /
 //             I
-fn cut_edges_test_c_all_starts() {
+fn cut_edges_test_c() {
     let mut gr = Graph::new_undirected();
     let a = gr.add_node("A");
     let b = gr.add_node("B");
@@ -112,19 +107,16 @@ fn cut_edges_test_c_all_starts() {
 
     println!("{}", Dot::new(&gr));
 
-    let nodes = vec![a, b, c, d, e, f];
     let expected_bridges = [(a, b), (d, e), (d, g), (e, f)];
 
-    for start in nodes {
-        let mut iter = CutEdgesSearch::new(start);
-        let mut bridges = HashSet::new();
-        while let Some(bridge) = iter.next(&gr) {
-            bridges.insert(bridge);
-        }
+    let mut iter = CutEdgesSearch::new(&gr);
+    let mut bridges = HashSet::new();
+    while let Some(bridge) = iter.next(&gr) {
+        bridges.insert(bridge);
+    }
 
-        assert_eq!(bridges.len(), expected_bridges.len());
-        for (a, b) in expected_bridges {
-            assert!(bridges.contains(&(a, b)) || bridges.contains(&(b, a)))
-        }
+    assert_eq!(bridges.len(), expected_bridges.len());
+    for (a, b) in expected_bridges {
+        assert!(bridges.contains(&(a, b)) || bridges.contains(&(b, a)))
     }
 }
