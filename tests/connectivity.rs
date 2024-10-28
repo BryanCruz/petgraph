@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use petgraph::{algo::connectivity::CutEdgesSearch, dot::Dot, Graph, Undirected};
+use petgraph::{algo::connectivity::CutEdgesSearch, dot::Dot, Graph, Undirected, graph6::FromGraph6};
 
 #[test]
 fn cut_edges_test_empty() {
@@ -154,4 +154,90 @@ fn cut_edges_test_c() {
     for (a, b) in expected_bridges {
         assert!(bridges.contains(&(a, b)) || bridges.contains(&(b, a)))
     }
+}
+
+
+#[test]
+fn cut_edges_test_c6() {
+
+    let C6 = "EhEG".to_string(); // C_6 graph
+    let gr: Graph<(), (), Undirected> = Graph::from_graph6_string(C6);
+
+    let mut iter = CutEdgesSearch::new(&gr);
+
+    assert_eq!(iter.next(&gr), None);
+    assert_eq!(iter.next(&gr), None);
+}
+
+#[test]
+fn cut_edges_test_butterfly() {
+
+    let ButterflyGraph = "DK{".to_string(); 
+    let gr: Graph<(), (), Undirected> = Graph::from_graph6_string(ButterflyGraph);
+
+    let mut iter = CutEdgesSearch::new(&gr);
+
+    assert_eq!(iter.next(&gr), None);
+    assert_eq!(iter.next(&gr), None);
+}
+
+#[test]
+fn cut_edges_test_star() {
+
+    let star6rays = "FsaC?".to_string(); 
+    let gr: Graph<(), (), Undirected> = Graph::from_graph6_string(star6rays);
+
+    let mut bridges = HashSet::new();
+    let mut iter = CutEdgesSearch::new(&gr);
+    while let Some(bridge) = iter.next(&gr) {
+        bridges.insert((bridge.0.index(), bridge.1.index()));
+    }
+
+    let expected_bridges = [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6)];
+
+    assert_eq!(bridges.len(), expected_bridges.len());
+    for (a, b) in expected_bridges {
+        assert!(bridges.contains(&(a, b)) || bridges.contains(&(b, a)))
+    }
+
+}
+
+#[test]
+fn cut_edges_test_small_tree() {
+
+    let mut gr = Graph::new_undirected();
+    let mut nodes = Vec::new();
+    for i in 0..13 {
+        nodes.push(gr.add_node(1));
+    }
+
+   let mut edges = vec![
+        (1, 2, 1.0),
+        (2, 3, 1.0),
+        (3, 4, 1.0),
+        (4, 5, 1.0),
+        (5, 6, 1.0),
+        (5, 7, 1.0),
+        (5, 9, 1.0),
+        (9, 10, 1.0),
+        (10, 11, 1.0),
+        (10, 12, 1.0),
+        (5, 0, 1.0),
+    ];
+
+    for (u, v, weight) in &edges {
+        gr.add_edge(nodes[*u], nodes[*v], weight);
+    }
+
+    let mut bridges = HashSet::new();
+    let mut iter = CutEdgesSearch::new(&gr);
+    while let Some(bridge) = iter.next(&gr) {
+        bridges.insert((bridge.0.index(), bridge.1.index()));
+    }
+
+    assert_eq!(bridges.len(), edges.len());
+    for (a, b, w) in &edges {
+        assert!(bridges.contains(&(*a, *b)) || bridges.contains(&(*b, *a)))
+    }
+
 }
