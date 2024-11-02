@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
-use petgraph::{algo::connectivity::CutEdgesSearch, dot::Dot, Graph, Undirected, graph6::FromGraph6};
+use petgraph::{
+    algo::connectivity::CutEdgesSearch, dot::Dot, graph6::FromGraph6, Graph, Undirected,
+};
 
 #[test]
 fn cut_edges_test_empty() {
@@ -156,12 +158,10 @@ fn cut_edges_test_c() {
     }
 }
 
-
 #[test]
 fn cut_edges_test_c6() {
-
-    let C6 = "EhEG".to_string(); // C_6 graph
-    let gr: Graph<(), (), Undirected> = Graph::from_graph6_string(C6);
+    let c6 = "EhEG".to_string(); // C_6 graph
+    let gr: Graph<(), (), Undirected> = Graph::from_graph6_string(c6);
 
     let mut iter = CutEdgesSearch::new(&gr);
 
@@ -171,9 +171,8 @@ fn cut_edges_test_c6() {
 
 #[test]
 fn cut_edges_test_butterfly() {
-
-    let ButterflyGraph = "DK{".to_string(); 
-    let gr: Graph<(), (), Undirected> = Graph::from_graph6_string(ButterflyGraph);
+    let butterfly_graph = "DK{".to_string();
+    let gr: Graph<(), (), Undirected> = Graph::from_graph6_string(butterfly_graph);
 
     let mut iter = CutEdgesSearch::new(&gr);
 
@@ -183,8 +182,7 @@ fn cut_edges_test_butterfly() {
 
 #[test]
 fn cut_edges_test_star() {
-
-    let star6rays = "FsaC?".to_string(); 
+    let star6rays = "FsaC?".to_string();
     let gr: Graph<(), (), Undirected> = Graph::from_graph6_string(star6rays);
 
     let mut bridges = HashSet::new();
@@ -199,19 +197,17 @@ fn cut_edges_test_star() {
     for (a, b) in expected_bridges {
         assert!(bridges.contains(&(a, b)) || bridges.contains(&(b, a)))
     }
-
 }
 
 #[test]
 fn cut_edges_test_small_tree() {
-
     let mut gr = Graph::new_undirected();
     let mut nodes = Vec::new();
-    for i in 0..13 {
+    for _ in 0..13 {
         nodes.push(gr.add_node(1));
     }
 
-   let mut edges = vec![
+    let edges = vec![
         (1, 2, 1.0),
         (2, 3, 1.0),
         (3, 4, 1.0),
@@ -236,8 +232,7 @@ fn cut_edges_test_small_tree() {
     }
 
     assert_eq!(bridges.len(), edges.len());
-    for (a, b, w) in &edges {
+    for (a, b, _w) in &edges {
         assert!(bridges.contains(&(*a, *b)) || bridges.contains(&(*b, *a)))
     }
-
 }
