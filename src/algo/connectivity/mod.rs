@@ -4,7 +4,7 @@ pub use cut_vertices::CutVerticesSearch;
 mod cut_edges;
 mod cut_vertices;
 
-/// Marker type for bridges search.
+/// Marker type used in DFS searches.
 #[derive(Debug, PartialEq)]
 pub enum Color {
     Gray,
