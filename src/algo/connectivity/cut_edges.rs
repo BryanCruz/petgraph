@@ -9,7 +9,7 @@ pub struct CutEdgesSearch<'a, N> {
     /// if it has gray color it means it is being processed and
     /// if it has black color it means its processing is finished.
     pub color: HashMap<N, Color>,
-    /// The map of preorder number each node is reached in DFS search.
+    /// The preorder number of each node in the DFS search.
     pub pre: HashMap<N, usize>,
     /// The map of lowest preorder number each node is reachable in DFS search.
     pub low: HashMap<N, usize>,
