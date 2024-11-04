@@ -12,7 +12,10 @@ mod common;
 use common::ungraph;
 
 use petgraph::{
-    algo::connectivity::{CutEdgesSearch, CutVerticesSearch},
+    algo::connectivity::{
+        BiconnectedComponentsSearch, CutEdgesSearch, CutVerticesSearch,
+        TwoEdgeConnectedComponentsSearch,
+    },
     graph6::FromGraph6,
     visit::{IntoNeighbors, IntoNodeIdentifiers},
     Graph, Undirected,
@@ -46,6 +49,18 @@ fn cut_edges_search_petersen(bench: &mut Bencher) {
 fn cut_edges_search_2000n(bench: &mut Bencher) {
     let g = graph_from_graph6_file("tests/res/graph_2000n.g6");
     bench.iter(|| iterate_cut_edges_search(&g));
+}
+
+fn iterate_cut_edges_search<G, N>(g: G)
+where
+    N: Hash + Eq + Copy,
+    G: IntoNeighbors<NodeId = N> + IntoNodeIdentifiers,
+{
+    let mut cut_edges_search = CutEdgesSearch::new(g);
+
+    while let Some(edge) = cut_edges_search.next(g) {
+        std::hint::black_box(edge);
+    }
 }
 
 #[bench]
@@ -93,18 +108,6 @@ fn cut_vertices_search_2000n(bench: &mut Bencher) {
     bench.iter(|| iterate_cut_vertices_search(&g));
 }
 
-fn iterate_cut_edges_search<G, N>(g: G)
-where
-    N: Hash + Eq + Copy,
-    G: IntoNeighbors<NodeId = N> + IntoNodeIdentifiers,
-{
-    let mut cut_edges_search = CutEdgesSearch::new(g);
-
-    while let Some(edge) = cut_edges_search.next(g) {
-        std::hint::black_box(edge);
-    }
-}
-
 fn iterate_cut_vertices_search<G, N>(g: G)
 where
     N: Hash + Eq + Copy,
@@ -113,6 +116,120 @@ where
     let mut cut_vertices_search = CutVerticesSearch::new(g);
 
     while let Some(node) = cut_vertices_search.next(g) {
+        std::hint::black_box(node);
+    }
+}
+
+#[bench]
+fn biconnected_components_search_praust(bench: &mut Bencher) {
+    let a = ungraph().praust_a();
+    let b = ungraph().praust_b();
+
+    bench.iter(|| {
+        (
+            iterate_biconnected_components_search(&a),
+            iterate_cut_edges_search(&b),
+        )
+    });
+}
+
+#[bench]
+fn biconnected_components_search_full(bench: &mut Bencher) {
+    let a = ungraph().full_a();
+    let b = ungraph().full_b();
+
+    bench.iter(|| {
+        (
+            iterate_biconnected_components_search(&a),
+            iterate_biconnected_components_search(&b),
+        )
+    });
+}
+
+#[bench]
+fn biconnected_components_search_petersen(bench: &mut Bencher) {
+    let a: Graph<(), (), Undirected> = ungraph().petersen_a();
+    let b = ungraph().petersen_b();
+
+    bench.iter(|| {
+        (
+            iterate_biconnected_components_search(&a),
+            iterate_biconnected_components_search(&b),
+        )
+    });
+}
+
+#[bench]
+fn biconnected_components_search_2000n(bench: &mut Bencher) {
+    let g = graph_from_graph6_file("tests/res/graph_2000n.g6");
+    bench.iter(|| iterate_biconnected_components_search(&g));
+}
+
+fn iterate_biconnected_components_search<G, N>(g: G)
+where
+    N: Hash + Eq + Copy,
+    G: IntoNeighbors<NodeId = N> + IntoNodeIdentifiers,
+{
+    let mut biconnected_components_search = BiconnectedComponentsSearch::new(g);
+
+    while let Some(node) = biconnected_components_search.next(g) {
+        std::hint::black_box(node);
+    }
+}
+
+#[bench]
+fn two_edge_connected_components_search_praust(bench: &mut Bencher) {
+    let a = ungraph().praust_a();
+    let b = ungraph().praust_b();
+
+    bench.iter(|| {
+        (
+            iterate_two_edge_connected_components_search(&a),
+            iterate_cut_edges_search(&b),
+        )
+    });
+}
+
+#[bench]
+fn two_edge_connected_components_search_full(bench: &mut Bencher) {
+    let a = ungraph().full_a();
+    let b = ungraph().full_b();
+
+    bench.iter(|| {
+        (
+            iterate_two_edge_connected_components_search(&a),
+            iterate_two_edge_connected_components_search(&b),
+        )
+    });
+}
+
+#[bench]
+fn two_edge_connected_components_search_petersen(bench: &mut Bencher) {
+    let a: Graph<(), (), Undirected> = ungraph().petersen_a();
+    let b = ungraph().petersen_b();
+
+    bench.iter(|| {
+        (
+            iterate_two_edge_connected_components_search(&a),
+            iterate_two_edge_connected_components_search(&b),
+        )
+    });
+}
+
+#[bench]
+fn two_edge_connected_components_search_2000n(bench: &mut Bencher) {
+    let g = graph_from_graph6_file("tests/res/graph_2000n.g6");
+    bench.iter(|| iterate_two_edge_connected_components_search(&g));
+}
+
+fn iterate_two_edge_connected_components_search<G, N>(g: G)
+where
+    N: Hash + Eq + Copy,
+    G: IntoNeighbors<NodeId = N> + IntoNodeIdentifiers,
+{
+    let mut two_edge_connected_components_search = TwoEdgeConnectedComponentsSearch::new(g);
+
+    while let Some(node) = two_edge_connected_components_search.next(g) {
         std::hint::black_box(node);
     }
 }

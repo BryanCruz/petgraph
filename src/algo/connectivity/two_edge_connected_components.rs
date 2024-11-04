@@ -4,10 +4,7 @@ use std::{
 };
 
 use super::Color;
-use crate::{
-    algo::IntoNeighbors,
-    visit::{IntoNodeIdentifiers, NodeIndexable},
-};
+use crate::{algo::IntoNeighbors, visit::IntoNodeIdentifiers};
 
 pub struct TwoEdgeConnectedComponentsSearch<'a, N> {
     /// The map of colors of each node.
@@ -58,7 +55,7 @@ where
 
     pub fn next<G>(&mut self, graph: G) -> Option<HashSet<N>>
     where
-        G: 'a + IntoNeighbors<NodeId = N> + NodeIndexable,
+        G: 'a + IntoNeighbors<NodeId = N>,
     {
         while !self.edges_stack.is_empty() {
             let (parent, a) = *self.edges_stack.last().unwrap();
