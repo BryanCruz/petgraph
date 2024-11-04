@@ -9,7 +9,7 @@ use crate::{
     visit::{IntoNodeIdentifiers, NodeIndexable},
 };
 
-pub struct BiconnectedComponentsSearch<'a, N> {
+pub struct TwoEdgeConnectedComponentsSearch<'a, N> {
     /// The map of colors of each node.
     /// If it hasn't any color it means it wasn't visited yet,
     /// if it has gray color it means it is being processed and
@@ -27,9 +27,9 @@ pub struct BiconnectedComponentsSearch<'a, N> {
     nodes_stack: Vec<N>,
 }
 
-/// Each call to `next` should return a graph's maximal biconnected component
+/// Each call to `next` should return a graph's maximal 2-edge-connected component
 /// if it exists, otherwise returns an empty set.
-impl<'a, N> BiconnectedComponentsSearch<'a, N>
+impl<'a, N> TwoEdgeConnectedComponentsSearch<'a, N>
 where
     N: Hash + Eq + Copy,
 {
@@ -46,7 +46,7 @@ where
             nodes_stack.push(start);
         };
 
-        BiconnectedComponentsSearch {
+        TwoEdgeConnectedComponentsSearch {
             color: HashMap::new(),
             pre: HashMap::new(),
             low: HashMap::new(),
@@ -90,25 +90,23 @@ where
                 self.edges_stack.pop();
                 // Check if its initial dummy edge
                 if parent == a {
-                    return if self.color.len() == 1 {
-                        // singleton graph
-                        Some(HashSet::from([a]))
-                    } else {
-                        None
-                    };
+                    let mut component = HashSet::new();
+                    while !self.nodes_stack.is_empty() {
+                        component.insert(self.nodes_stack.pop().unwrap());
+                    }
+                    return Some(component);
                 }
                 let low_parent = *self.low.get(&parent).unwrap();
                 let low_a = *self.low.get(&a).unwrap();
-                let pre_parent = *self.pre.get(&parent).unwrap();
+                let pre_a = *self.pre.get(&a).unwrap();
                 if low_a < low_parent {
                     self.low.insert(parent, low_a);
                 }
-                if low_a >= pre_parent {
+                if low_a == pre_a {
                     let mut component = HashSet::new();
                     while self.nodes_stack.last() != Some(&parent) {
                         component.insert(self.nodes_stack.pop().unwrap());
                     }
-                    component.insert(parent);
                     return Some(component);
                 }
             }
