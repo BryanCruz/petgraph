@@ -9,9 +9,9 @@ fn test_dinics_a() {
     let source = graph.add_node(0);
     let _ = graph.add_node(1);
     let _ = graph.add_node(2);
-    let destination = graph.add_node(3);
+    let sink = graph.add_node(3);
     graph.extend_with_edges(&[(0, 1, 3), (0, 2, 2), (1, 2, 5), (1, 3, 2), (2, 3, 3)]);
-    let (max_flow, _) = dinics(&graph, source, destination);
+    let (max_flow, _) = dinics(&graph, source, sink);
     assert_eq!(5, max_flow);
 }
 
@@ -24,7 +24,7 @@ fn test_dinics_b() {
     let _ = graph.add_node(2);
     let _ = graph.add_node(3);
     let _ = graph.add_node(4);
-    let destination = graph.add_node(5);
+    let sink = graph.add_node(5);
     graph.extend_with_edges(&[
         (0, 1, 4.),
         (0, 2, 3.),
@@ -34,7 +34,7 @@ fn test_dinics_b() {
         (3, 5, 2.),
         (4, 5, 6.),
     ]);
-    let (max_flow, _) = dinics(&graph, source, destination);
+    let (max_flow, _) = dinics(&graph, source, sink);
     assert_eq!(7.0, max_flow);
 }
 #[test]
@@ -46,7 +46,7 @@ fn test_dinics_c() {
     let _ = graph.add_node(2);
     let _ = graph.add_node(3);
     let _ = graph.add_node(4);
-    let destination = graph.add_node(5);
+    let sink = graph.add_node(5);
     graph.extend_with_edges(&[
         (0, 1, 7.),
         (0, 2, 4.),
@@ -58,7 +58,7 @@ fn test_dinics_c() {
         (4, 3, 3.),
         (4, 5, 5.),
     ]);
-    let (max_flow, _) = dinics(&graph, source, destination);
+    let (max_flow, _) = dinics(&graph, source, sink);
     assert_eq!(10.0, max_flow);
 }
 
@@ -71,7 +71,7 @@ fn test_dinics_d() {
     let _ = graph.add_node(2);
     let _ = graph.add_node(3);
     let _ = graph.add_node(4);
-    let destination = graph.add_node(5);
+    let sink = graph.add_node(5);
     graph.extend_with_edges(&[
         (0, 1, 8.),
         (0, 2, 3.),
@@ -81,7 +81,7 @@ fn test_dinics_d() {
         (3, 5, 2.),
         (4, 5, 5.),
     ]);
-    let (max_flow, _) = dinics(&graph, source, destination);
+    let (max_flow, _) = dinics(&graph, source, sink);
     assert_eq!(5.0, max_flow);
 }
 
@@ -93,7 +93,7 @@ fn test_dinics_e() {
     let _ = graph.add_node(2);
     let _ = graph.add_node(3);
     let _ = graph.add_node(4);
-    let destination = graph.add_node(5);
+    let sink = graph.add_node(5);
     graph.extend_with_edges(&[
         (0, 1, 16),
         (0, 2, 13),
@@ -106,7 +106,7 @@ fn test_dinics_e() {
         (4, 3, 7),
         (4, 5, 4),
     ]);
-    let (max_flow, _) = dinics(&graph, source, destination);
+    let (max_flow, _) = dinics(&graph, source, sink);
     assert_eq!(23, max_flow);
 }
 
@@ -119,7 +119,7 @@ fn test_dinics_f() {
     let _ = graph.add_node(2);
     let _ = graph.add_node(3);
     let _ = graph.add_node(4);
-    let destination = graph.add_node(5);
+    let sink = graph.add_node(5);
     graph.extend_with_edges(&[
         (0, 1, 10),
         (0, 2, 10),
@@ -131,6 +131,6 @@ fn test_dinics_f() {
         (4, 3, 6),
         (4, 5, 10),
     ]);
-    let (max_flow, _) = dinics(&graph, source, destination);
+    let (max_flow, _) = dinics(&graph, source, sink);
     assert_eq!(19, max_flow);
 }
