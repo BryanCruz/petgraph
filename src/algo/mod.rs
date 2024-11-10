@@ -11,10 +11,10 @@ pub mod dijkstra;
 pub mod dominators;
 pub mod feedback_arc_set;
 pub mod floyd_warshall;
-pub mod ford_fulkerson;
 pub mod isomorphism;
 pub mod k_shortest_path;
 pub mod matching;
+pub mod maximum_flow;
 pub mod min_spanning_tree;
 pub mod page_rank;
 pub mod simple_paths;
@@ -38,13 +38,13 @@ pub use bellman_ford::{bellman_ford, find_negative_cycle};
 pub use dijkstra::dijkstra;
 pub use feedback_arc_set::greedy_feedback_arc_set;
 pub use floyd_warshall::floyd_warshall;
-pub use ford_fulkerson::ford_fulkerson;
 pub use isomorphism::{
     is_isomorphic, is_isomorphic_matching, is_isomorphic_subgraph, is_isomorphic_subgraph_matching,
     subgraph_isomorphisms_iter,
 };
 pub use k_shortest_path::k_shortest_path;
 pub use matching::{greedy_matching, maximum_matching, Matching};
+pub use maximum_flow::{dinics, ford_fulkerson};
 pub use min_spanning_tree::{min_spanning_tree, min_spanning_tree_prim};
 pub use page_rank::page_rank;
 pub use simple_paths::all_simple_paths;
