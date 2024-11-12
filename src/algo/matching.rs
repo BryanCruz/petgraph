@@ -655,8 +655,8 @@ fn augment_path<G>(
 /// ```
 pub fn maximum_bipartite_matching<G>(
     graph: G,
-    partition_1: Vec<G::NodeId>,
-    partition_2: Vec<G::NodeId>,
+    partition_1: &Vec<G::NodeId>,
+    partition_2: &Vec<G::NodeId>,
 ) -> Matching<G>
 where
     G: NodeIndexable + EdgeIndexable + NodeCount + EdgeCount + IntoNodeReferences + IntoEdges,
@@ -689,13 +689,13 @@ where
 
     // Add source and sink
     let source = network.add_node(graph.node_count());
-    for node in partition_1 {
+    for &node in partition_1 {
         let node_index = NodeIndexable::to_index(&graph, node);
         network.add_edge(source, NodeIndex::new(node_index), 1);
     }
 
     let sink = network.add_node(graph.node_count() + 1);
-    for node in partition_2 {
+    for &node in partition_2 {
         let node_index = NodeIndexable::to_index(&graph, node);
         network.add_edge(NodeIndex::new(node_index), sink, 1);
     }

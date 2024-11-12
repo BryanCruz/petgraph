@@ -144,7 +144,7 @@ fn is_perfect_in_stable_graph() {
 #[test]
 fn maximum_bipartite_empty() {
     let g: UnGraph<(), ()> = UnGraph::default();
-    let m = maximum_bipartite_matching(&g, Vec::new(), Vec::new());
+    let m = maximum_bipartite_matching(&g, &Vec::new(), &Vec::new());
     assert_eq!(collect(m.edges()), set![]);
     assert_eq!(collect(m.nodes()), set![]);
 }
@@ -156,7 +156,7 @@ fn maximum_bipartite_k2() {
     let _1 = g.add_node(());
     g.add_edge(_0, _1, ());
 
-    let m = maximum_bipartite_matching(&g, vec![_0], vec![_1]);
+    let m = maximum_bipartite_matching(&g, &vec![_0], &vec![_1]);
     assert_eq!(collect(m.edges()), set![(0, 1)]);
     assert_eq!(collect(m.nodes()), set![0, 1]);
 }
@@ -195,7 +195,7 @@ fn maximum_bipartite_test() {
         (_1_6, _2_6),
     ]);
 
-    let m = maximum_bipartite_matching(&g, partition_1, partition_2);
+    let m = maximum_bipartite_matching(&g, &partition_1, &partition_2);
     assert_eq!(
         collect(m.edges()),
         set![
