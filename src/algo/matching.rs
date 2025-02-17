@@ -613,65 +613,65 @@ fn augment_path<G>(
 }
 
 /// Compute the [*maximum matching*][1]
-/// for a bipartite graph by reducing it to a [maximum flow][2] problem
+/// for a bipartite graph by reducing it to a [maximum flow][2] problem,
 /// and then using Ford Fulkerson method to solve maximum flow problem.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Matching_(graph_theory)
 /// [2]: https://en.wikipedia.org/wiki/Maximum_flow_problem
 ///
-/// The input graph is treated as if undirected. The algorithm runs in
-/// *O(TODO)*.
-///
-/// # Examples (TODO)
-///
-/// ```
-/// use petgraph::prelude::*;
-/// use petgraph::algo::maximum_matching;
-///
-/// // The example graph:
-/// //
-/// //    +-- b ---- d ---- f
-/// //   /    |      |
-/// //  a     |      |
-/// //   \    |      |
-/// //    +-- c ---- e
-/// //
-/// // Maximum matching: { (a, b), (c, e), (d, f) }
-///
-/// let mut graph: UnGraph<(), ()> = UnGraph::new_undirected();
-/// let a = graph.add_node(());
-/// let b = graph.add_node(());
-/// let c = graph.add_node(());
-/// let d = graph.add_node(());
-/// let e = graph.add_node(());
-/// let f = graph.add_node(());
-/// graph.extend_with_edges(&[(a, b), (a, c), (b, c), (b, d), (c, e), (d, e), (d, f)]);
-///
-/// let matching = maximum_matching(&graph);
-/// assert!(matching.contains_edge(a, b));
-/// assert!(matching.contains_edge(c, e));
-/// assert_eq!(matching.mate(d), Some(f));
-/// assert_eq!(matching.mate(f), Some(d));
-/// ```
+/// The input graph is treated as if undirected.
 pub fn maximum_bipartite_matching<G>(
     graph: G,
-    partition_1: &Vec<G::NodeId>,
-    partition_2: &Vec<G::NodeId>,
+    partition_a: &Vec<G::NodeId>,
+    partition_b: &Vec<G::NodeId>,
 ) -> Matching<G>
+where
+    G: NodeIndexable + EdgeIndexable + NodeCount + EdgeCount + IntoNodeReferences + IntoEdges,
+{
+    let (network, source, sink) =
+        maximum_bipartite_matching_instance(&graph, partition_a, partition_b);
+
+    let (_, flow) = ford_fulkerson(&network, source, sink);
+    let mut mate = vec![None; graph.node_count()];
+    let mut n_edges = 0;
+
+    for edge_index in 0..(graph.edge_count()) {
+        if flow[edge_index] == 1 {
+            let edge = EdgeIndexable::from_index(&network, edge_index);
+            let (source, target) = network.edge_endpoints(edge).unwrap();
+            let source_index = NodeIndexable::to_index(&network, source);
+            let target_index = NodeIndexable::to_index(&network, target);
+            let source_id = NodeIndexable::from_index(&graph, source_index);
+            let target_id = NodeIndexable::from_index(&graph, target_index);
+            mate[source_index] = Some(target_id);
+            mate[target_index] = Some(source_id);
+            n_edges += 1;
+        }
+    }
+
+    Matching::new(graph, mate, n_edges)
+}
+
+fn maximum_bipartite_matching_instance<G>(
+    graph: &G,
+    partition_a: &Vec<G::NodeId>,
+    partition_b: &Vec<G::NodeId>,
+) -> (Graph<usize, usize, Directed>, NodeIndex, NodeIndex)
 where
     G: NodeIndexable + EdgeIndexable + NodeCount + EdgeCount + IntoNodeReferences + IntoEdges,
 {
     let mut network: Graph<usize, usize, Directed> =
         Graph::with_capacity(graph.node_count(), graph.edge_count());
 
-    // Clone original graph
+    // Add nodes from original graph
     for i in 0..graph.node_count() {
         network.add_node(i);
     }
 
+    // Add edges from original graph, directed from partition_a to partition_b
     let mut network_edges = Vec::new();
     for edge in graph.edge_references() {
-        let (source, target) = if partition_1.contains(&edge.source()) {
+        let (source, target) = if partition_a.contains(&edge.source()) {
             (edge.source(), edge.target())
         } else {
             (edge.target(), edge.source())
@@ -687,36 +687,19 @@ where
         network_edges.push(edge_index);
     }
 
-    // Add source and sink
+    // Add source node
     let source = network.add_node(graph.node_count());
-    for &node in partition_1 {
+    for &node in partition_a {
         let node_index = NodeIndexable::to_index(&graph, node);
         network.add_edge(source, NodeIndex::new(node_index), 1);
     }
 
+    // Add sink node
     let sink = network.add_node(graph.node_count() + 1);
-    for &node in partition_2 {
+    for &node in partition_b {
         let node_index = NodeIndexable::to_index(&graph, node);
         network.add_edge(NodeIndex::new(node_index), sink, 1);
     }
 
-    // Solve
-    let (_, flow) = ford_fulkerson(&network, source, sink);
-    let mut mate = vec![None; graph.node_count()];
-    let mut n_edges = 0;
-    for edge in network_edges {
-        let edge_index = EdgeIndexable::to_index(&network, edge);
-        if flow[edge_index] == 1 {
-            let (source, target) = network.edge_endpoints(edge).unwrap();
-            let source_index = NodeIndexable::to_index(&network, source);
-            let target_index = NodeIndexable::to_index(&network, target);
-            let source_id = NodeIndexable::from_index(&graph, source_index);
-            let target_id = NodeIndexable::from_index(&graph, target_index);
-            mate[source_index] = Some(target_id);
-            mate[target_index] = Some(source_id);
-            n_edges += 1;
-        }
-    }
-
-    Matching::new(graph, mate, n_edges)
+    (network, source, sink)
 }
