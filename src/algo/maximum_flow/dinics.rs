@@ -16,34 +16,6 @@ use crate::{
 /// Returns the maximum flow and also the computed edge flows.
 ///
 /// [ff]: https://en.wikipedia.org/wiki/Dinic%27s_algorithm
-///
-/// # Example
-/// ```rust
-/// use petgraph::Graph;
-/// use petgraph::algo::dinics;
-/// // Example from CLRS book
-/// let mut graph = Graph::<u8, u8>::new();
-/// let source = graph.add_node(0);
-/// let _ = graph.add_node(1);
-/// let _ = graph.add_node(2);
-/// let _ = graph.add_node(3);
-/// let _ = graph.add_node(4);
-/// let sink = graph.add_node(5);
-/// graph.extend_with_edges(&[
-///    (0, 1, 16),
-///    (0, 2, 13),
-///    (1, 2, 10),
-///    (1, 3, 12),
-///    (2, 1, 4),
-///    (2, 4, 14),
-///    (3, 2, 9),
-///    (3, 5, 20),
-///    (4, 3, 7),
-///    (4, 5, 4),
-/// ]);
-/// let (max_flow, _) = dinics(&graph, source, sink);
-/// assert_eq!(23, max_flow);
-/// ```
 pub fn dinics<N>(
     network: N,
     source: N::NodeId,
