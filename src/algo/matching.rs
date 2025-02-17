@@ -635,16 +635,12 @@ where
     let mut mate = vec![None; graph.node_count()];
     let mut n_edges = 0;
 
-    for edge_index in 0..(graph.edge_count()) {
-        if flow[edge_index] == 1 {
-            let edge = EdgeIndexable::from_index(&network, edge_index);
-            let (source, target) = network.edge_endpoints(edge).unwrap();
-            let source_index = NodeIndexable::to_index(&network, source);
-            let target_index = NodeIndexable::to_index(&network, target);
-            let source_id = NodeIndexable::from_index(&graph, source_index);
-            let target_id = NodeIndexable::from_index(&graph, target_index);
-            mate[source_index] = Some(target_id);
-            mate[target_index] = Some(source_id);
+    for edge in graph.edge_references() {
+        if flow[EdgeIndexable::to_index(&graph, edge.id())] == 1 {
+            let (source, target) =
+                source_and_target_from_partitions::<G>(edge, partition_a, partition_b);
+            mate[NodeIndexable::to_index(&graph, source)] = Some(target);
+            mate[NodeIndexable::to_index(&graph, target)] = Some(source);
             n_edges += 1;
         }
     }
@@ -652,54 +648,70 @@ where
     Matching::new(graph, mate, n_edges)
 }
 
+/// Create a network from given graph.
+/// Created Nodes and Edges indices are compatible
+/// with the ones from original graph.
 fn maximum_bipartite_matching_instance<G>(
     graph: &G,
     partition_a: &Vec<G::NodeId>,
     partition_b: &Vec<G::NodeId>,
-) -> (Graph<usize, usize, Directed>, NodeIndex, NodeIndex)
+) -> (Graph<(), usize, Directed>, NodeIndex, NodeIndex)
 where
     G: NodeIndexable + EdgeIndexable + NodeCount + EdgeCount + IntoNodeReferences + IntoEdges,
 {
-    let mut network: Graph<usize, usize, Directed> =
-        Graph::with_capacity(graph.node_count(), graph.edge_count());
+    let mut network = Graph::with_capacity(
+        graph.node_count() + 2,
+        graph.edge_count() + partition_a.len() + partition_b.len(),
+    );
 
     // Add nodes from original graph
-    for i in 0..graph.node_count() {
-        network.add_node(i);
+    for _ in 0..graph.node_count() {
+        network.add_node(());
     }
 
     // Add edges from original graph, directed from partition_a to partition_b
-    let mut network_edges = Vec::new();
     for edge in graph.edge_references() {
-        let (source, target) = if partition_a.contains(&edge.source()) {
-            (edge.source(), edge.target())
-        } else {
-            (edge.target(), edge.source())
-        };
-
+        let (source, target) =
+            source_and_target_from_partitions::<G>(edge, partition_a, partition_b);
         let source_index = NodeIndexable::to_index(&graph, source);
         let target_index = NodeIndexable::to_index(&graph, target);
-        let edge_index = network.add_edge(
+        network.add_edge(
             NodeIndexable::from_index(&network, source_index),
             NodeIndexable::from_index(&network, target_index),
             1,
         );
-        network_edges.push(edge_index);
     }
 
     // Add source node
-    let source = network.add_node(graph.node_count());
+    let source = network.add_node(());
     for &node in partition_a {
         let node_index = NodeIndexable::to_index(&graph, node);
         network.add_edge(source, NodeIndex::new(node_index), 1);
     }
 
     // Add sink node
-    let sink = network.add_node(graph.node_count() + 1);
+    let sink = network.add_node(());
     for &node in partition_b {
         let node_index = NodeIndexable::to_index(&graph, node);
         network.add_edge(NodeIndex::new(node_index), sink, 1);
     }
 
     (network, source, sink)
+}
+
+fn source_and_target_from_partitions<G>(
+    edge: G::EdgeRef,
+    partition_a: &Vec<G::NodeId>,
+    partition_b: &Vec<G::NodeId>,
+) -> (G::NodeId, G::NodeId)
+where
+    G: IntoEdges,
+{
+    if partition_a.contains(&edge.source()) {
+        (edge.source(), edge.target())
+    } else if partition_b.contains(&edge.source()) {
+        (edge.target(), edge.source())
+    } else {
+        panic!("Partitions are inconsistent.");
+    }
 }
