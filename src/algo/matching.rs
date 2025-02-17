@@ -6,7 +6,7 @@ use crate::visit::{
     IntoNodeReferences, NodeCount, NodeIndexable, VisitMap, Visitable,
 };
 
-use super::{ford_fulkerson, Directed, Graph, NodeIndex};
+use crate::{algo::ford_fulkerson, graph::NodeIndex, Directed, Graph};
 
 /// Computed
 /// [*matching*](https://en.wikipedia.org/wiki/Matching_(graph_theory)#Definitions)
