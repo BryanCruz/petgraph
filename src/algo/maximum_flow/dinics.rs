@@ -57,24 +57,24 @@ where
     visited.visit(source);
     queue.push_back(source);
 
-    level_graph[get_vertex_index(network, source)] = 1;
+    level_graph[NodeIndexable::to_index(&network, source)] = 1;
     while let Some(vertex) = queue.pop_front() {
-        let vertex_level = level_graph[get_vertex_index(network, vertex)];
+        let vertex_level = level_graph[NodeIndexable::to_index(&network, vertex)];
         let out_edges = network.edges_directed(vertex, Direction::Outgoing);
         let in_edges = network.edges_directed(vertex, Direction::Incoming);
         for edge in out_edges.chain(in_edges) {
             let next = other_endpoint(&network, edge, vertex);
-            let edge_index = get_edge_index(network, edge);
+            let edge_index = EdgeIndexable::to_index(&network, edge.id());
             let residual_cap = residual_capacity(&network, edge, next, flows[edge_index]);
             if !visited.is_visited(&next) && (residual_cap > N::EdgeWeight::zero()) {
                 visited.visit(next);
-                level_graph[get_vertex_index(network, next)] = vertex_level + 1;
+                level_graph[NodeIndexable::to_index(&network, next)] = vertex_level + 1;
                 queue.push_back(next);
             }
         }
     }
 
-    let sink_level = level_graph[get_vertex_index(network, sink)];
+    let sink_level = level_graph[NodeIndexable::to_index(&network, sink)];
     sink_level > 0
 }
 
@@ -101,8 +101,8 @@ where
 
         // Find the bottleneck capacity of the path
         let mut vertex = sink;
-        while let Some(edge) = edge_to[get_vertex_index(network, vertex)] {
-            let edge_index = get_edge_index(network, edge);
+        while let Some(edge) = edge_to[NodeIndexable::to_index(&network, vertex)] {
+            let edge_index = EdgeIndexable::to_index(&network, edge.id());
             let residual_capacity = residual_capacity(&network, edge, vertex, flows[edge_index]);
             path_flow = min::<N>(path_flow, residual_capacity);
             vertex = other_endpoint(&network, edge, vertex);
@@ -110,8 +110,8 @@ where
 
         // Update the flow of each edge along the discovered path
         let mut vertex = sink;
-        while let Some(edge) = edge_to[get_vertex_index(network, vertex)] {
-            let edge_index = get_edge_index(network, edge);
+        while let Some(edge) = edge_to[NodeIndexable::to_index(&network, vertex)] {
+            let edge_index = EdgeIndexable::to_index(&network, edge.id());
             flows[edge_index] =
                 adjusted_residual_flow(&network, edge, vertex, flows[edge_index], path_flow);
             vertex = other_endpoint(&network, edge, vertex);
@@ -143,13 +143,13 @@ where
     queue.push_back(source);
 
     while let Some(vertex) = queue.pop_front() {
-        let vertex_index = get_vertex_index(network, vertex);
+        let vertex_index = NodeIndexable::to_index(&network, vertex);
         let out_edges = network.edges_directed(vertex, Direction::Outgoing);
         let in_edges = network.edges_directed(vertex, Direction::Incoming);
         for edge in out_edges.chain(in_edges) {
             let next_vertex = other_endpoint(&network, edge, vertex);
-            let next_vertex_index = get_vertex_index(network, next_vertex);
-            let edge_index: usize = get_edge_index(network, edge);
+            let next_vertex_index = NodeIndexable::to_index(&network, next_vertex);
+            let edge_index: usize = EdgeIndexable::to_index(&network, edge.id());
             let residual_cap = residual_capacity(&network, edge, next_vertex, flows[edge_index]);
             if level_graph[next_vertex_index] == level_graph[vertex_index] + 1
                 && !visited.is_visited(&next_vertex)
@@ -186,7 +186,7 @@ where
         // forward edge
         flow + flow_increase
     } else {
-        let end_point = get_vertex_index(network, target_vertex);
+        let end_point = NodeIndexable::to_index(&network, target_vertex);
         panic!("Illegal endpoint {}", end_point);
     }
 }
@@ -209,7 +209,7 @@ where
         // forward edge
         return *edge.weight() - flow;
     } else {
-        let end_point = get_vertex_index(network, target_vertex);
+        let end_point = NodeIndexable::to_index(&network, target_vertex);
         panic!("Illegal endpoint {}", end_point);
     }
 }
@@ -240,18 +240,4 @@ where
         let end_point = NodeIndexable::to_index(&network, vertex);
         panic!("Illegal endpoint {}", end_point);
     }
-}
-
-fn get_vertex_index<N>(network: N, vertex: N::NodeId) -> usize
-where
-    N: NodeIndexable,
-{
-    NodeIndexable::to_index(&network, vertex)
-}
-
-fn get_edge_index<N>(network: N, edge: N::EdgeRef) -> usize
-where
-    N: EdgeIndexable + IntoEdges,
-{
-    EdgeIndexable::to_index(&network, edge.id())
 }
