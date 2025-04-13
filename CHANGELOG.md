@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.8.2](https://github.com/BryanCruz/petgraph/compare/petgraph@v0.8.1...petgraph@v0.8.2) - 2025-04-13
+
+### New Features
+
+- add graph6 encoder ([#4](https://github.com/BryanCruz/petgraph/pull/4))
+- add graph6 decoder ([#5](https://github.com/BryanCruz/petgraph/pull/5))
+- Connectivity algorithms sync April ([#21](https://github.com/BryanCruz/petgraph/pull/21))
+- April Sync - Dinics Algorithm ([#25](https://github.com/BryanCruz/petgraph/pull/25))
+- April Sync - Add bipartite matching ([#26](https://github.com/BryanCruz/petgraph/pull/26))
+
+### Other changes
+
+- docs and refact ([#8](https://github.com/BryanCruz/petgraph/pull/8))
+- Add Prim's algorithm for MST ([#10](https://github.com/BryanCruz/petgraph/pull/10))
+- Random graph generator ([#9](https://github.com/BryanCruz/petgraph/pull/9))
+- Cut edges ([#11](https://github.com/BryanCruz/petgraph/pull/11))
+- Cut vertices ([#12](https://github.com/BryanCruz/petgraph/pull/12))
+- 2 connected components ([#13](https://github.com/BryanCruz/petgraph/pull/13))
+- maximal 2-edge-connected components ([#14](https://github.com/BryanCruz/petgraph/pull/14))
+- Add Dinic's Maximum Flow Algorithm ([#16](https://github.com/BryanCruz/petgraph/pull/16))
+- Bipartite matching ([#17](https://github.com/BryanCruz/petgraph/pull/17))
+- Merge remote-tracking branch 'original/master' into merge-apr
+- Merge branch 'master-original'
+
 ## [0.8.1](https://github.com/petgraph/petgraph/compare/petgraph@v0.8.0...petgraph@v0.8.1) - 2025-04-07
 
 This patch release re-adds a missing `VisitMap` implementation that was dropped in the `0.8.0` release,
