@@ -157,7 +157,6 @@ pub mod csr;
 pub mod dot;
 #[cfg(feature = "generate")]
 pub mod generate;
-pub mod generators;
 pub mod graph6;
 mod graph_impl;
 #[cfg(feature = "graphmap")]
