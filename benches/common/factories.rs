@@ -1,6 +1,9 @@
+use std::fs::File;
+use std::io::Read;
 use std::marker::PhantomData;
 
 use petgraph::data::Build;
+use petgraph::graph6::FromGraph6;
 use petgraph::prelude::*;
 use petgraph::visit::NodeIndexable;
 
@@ -177,9 +180,8 @@ const BIPARTITE: &str = "
 ";
 
 /// Parse a text adjacency matrix format into a directed graph
-fn parse_graph<Ty, G>(s: &str) -> G
+fn parse_graph<G>(s: &str) -> G
 where
-    Ty: EdgeType,
     G: Default + Build<NodeWeight = (), EdgeWeight = ()> + NodeIndexable,
 {
     let mut g: G = Default::default();
@@ -221,35 +223,35 @@ where
     }
 
     pub fn petersen_a(self) -> G {
-        parse_graph::<Ty, _>(PETERSEN_A)
+        parse_graph::<_>(PETERSEN_A)
     }
 
     pub fn petersen_b(self) -> G {
-        parse_graph::<Ty, _>(PETERSEN_B)
+        parse_graph::<_>(PETERSEN_B)
     }
 
     pub fn full_a(self) -> G {
-        parse_graph::<Ty, _>(FULL_A)
+        parse_graph::<_>(FULL_A)
     }
 
     pub fn full_b(self) -> G {
-        parse_graph::<Ty, _>(FULL_B)
+        parse_graph::<_>(FULL_B)
     }
 
     pub fn praust_a(self) -> G {
-        parse_graph::<Ty, _>(PRAUST_A)
+        parse_graph::<_>(PRAUST_A)
     }
 
     pub fn praust_b(self) -> G {
-        parse_graph::<Ty, _>(PRAUST_B)
+        parse_graph::<_>(PRAUST_B)
     }
 
     pub fn bigger(self) -> G {
-        parse_graph::<Ty, _>(BIGGER)
+        parse_graph::<_>(BIGGER)
     }
 
     pub fn bipartite(self) -> G {
-        parse_graph::<Ty, _>(BIPARTITE)
+        parse_graph::<_>(BIPARTITE)
     }
 }
 
@@ -331,4 +333,13 @@ pub fn directed_fan(n: usize) -> DiGraph<(), ()> {
     }
 
     g
+}
+
+/// Parse a file in graph6 format into an undirected graph
+pub fn ungraph_from_graph6_file(path: &str) -> Graph<(), (), Undirected, u32> {
+    let mut f = File::open(path).expect("file not found");
+    let mut contents = String::new();
+    f.read_to_string(&mut contents)
+        .expect("failed to read from file");
+    Graph::from_graph6_string(contents)
 }
