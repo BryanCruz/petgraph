@@ -1,3 +1,5 @@
+use alloc::vec;
+
 use crate::{graph::IndexType, Graph, Undirected};
 
 /// Generates a random undirected graph with given `order` and with `p` probability
