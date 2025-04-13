@@ -1,8 +1,8 @@
-use std::collections::HashSet;
-
 use petgraph::{
     algo::connectivity::CutEdgesSearch, dot::Dot, graph6::FromGraph6, Graph, Undirected,
 };
+
+use hashbrown::HashSet;
 
 #[test]
 fn cut_edges_test_empty() {
@@ -207,7 +207,7 @@ fn cut_edges_test_small_tree() {
         nodes.push(gr.add_node(1));
     }
 
-    let edges = vec![
+    let edges = [
         (1, 2, 1.0),
         (2, 3, 1.0),
         (3, 4, 1.0),

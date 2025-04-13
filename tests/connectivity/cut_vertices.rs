@@ -1,8 +1,8 @@
-use std::collections::HashSet;
-
 use petgraph::{
     algo::connectivity::CutVerticesSearch, dot::Dot, graph::NodeIndex, Graph, Undirected,
 };
+
+use hashbrown::HashSet;
 
 #[test]
 fn cut_vertices_test_empty() {
@@ -187,7 +187,7 @@ fn cut_vertices_test_hard() {
         nodes.push(gr.add_node(1));
     }
 
-    let edges = vec![
+    let edges = [
         (1, 3, 1),
         (2, 3, 1),
         (3, 4, 1),
@@ -227,7 +227,7 @@ fn cut_vertices_test_hard() {
 
     println!("{}", Dot::new(&gr));
 
-    let cut_vertices = vec![3, 4, 6, 7, 8, 9, 10, 22, 11, 12, 18, 17, 19];
+    let cut_vertices = [3, 4, 6, 7, 8, 9, 10, 22, 11, 12, 18, 17, 19];
 
     let expected_cut_vertices: HashSet<NodeIndex> =
         cut_vertices.iter().map(|&index| nodes[index]).collect();
