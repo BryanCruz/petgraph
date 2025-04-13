@@ -3,7 +3,7 @@ use core::hash::Hash;
 
 use crate::visit::{
     EdgeCount, EdgeIndexable, EdgeRef, GraphBase, IntoEdges, IntoNeighbors, IntoNodeIdentifiers,
-    IntoNodeReferences, NodeCount, NodeIndexable, VisitMap, Visitable,
+    NodeCount, NodeIndexable, VisitMap, Visitable,
 };
 
 use crate::{algo::ford_fulkerson, graph::NodeIndex, Directed, Graph};
@@ -605,11 +605,11 @@ fn augment_path<G>(
 /// The input graph is treated as if undirected.
 pub fn maximum_bipartite_matching<G>(
     graph: G,
-    partition_a: &Vec<G::NodeId>,
-    partition_b: &Vec<G::NodeId>,
+    partition_a: &[G::NodeId],
+    partition_b: &[G::NodeId],
 ) -> Matching<G>
 where
-    G: NodeIndexable + EdgeIndexable + NodeCount + EdgeCount + IntoNodeReferences + IntoEdges,
+    G: NodeIndexable + EdgeIndexable + NodeCount + EdgeCount + IntoEdges,
 {
     let (network, source, sink) =
         maximum_bipartite_matching_instance(&graph, partition_a, partition_b);
@@ -636,11 +636,11 @@ where
 /// with the ones from original graph.
 fn maximum_bipartite_matching_instance<G>(
     graph: &G,
-    partition_a: &Vec<G::NodeId>,
-    partition_b: &Vec<G::NodeId>,
+    partition_a: &[G::NodeId],
+    partition_b: &[G::NodeId],
 ) -> (Graph<(), usize, Directed>, NodeIndex, NodeIndex)
 where
-    G: NodeIndexable + EdgeIndexable + NodeCount + EdgeCount + IntoNodeReferences + IntoEdges,
+    G: NodeIndexable + NodeCount + EdgeCount + IntoEdges,
 {
     let mut network = Graph::with_capacity(
         graph.node_count() + 2,
@@ -684,8 +684,8 @@ where
 
 fn source_and_target_from_partitions<G>(
     edge: G::EdgeRef,
-    partition_a: &Vec<G::NodeId>,
-    partition_b: &Vec<G::NodeId>,
+    partition_a: &[G::NodeId],
+    partition_b: &[G::NodeId],
 ) -> (G::NodeId, G::NodeId)
 where
     G: IntoEdges,
