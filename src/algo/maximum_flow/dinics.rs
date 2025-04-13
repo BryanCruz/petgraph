@@ -1,4 +1,5 @@
-use std::{collections::VecDeque, ops::Sub};
+use alloc::{collections::VecDeque, vec, vec::Vec};
+use core::ops::Sub;
 
 use crate::{
     algo::{EdgeRef, PositiveMeasure},
@@ -96,7 +97,7 @@ where
 {
     let mut flow_increase = N::EdgeWeight::zero();
     let mut edge_to = vec![None; network.node_count()];
-    while find_augmenting_path(&network, source, sink, &level_graph, &flows, &mut edge_to) {
+    while find_augmenting_path(&network, source, sink, level_graph, flows, &mut edge_to) {
         let mut path_flow = N::EdgeWeight::max();
 
         // Find the bottleneck capacity of the path
