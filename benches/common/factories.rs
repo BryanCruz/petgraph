@@ -1,6 +1,9 @@
 use core::marker::PhantomData;
+use std::fs::File;
+use std::io::Read;
 
 use petgraph::data::Build;
+use petgraph::graph6::FromGraph6;
 use petgraph::prelude::*;
 use petgraph::visit::NodeIndexable;
 
@@ -330,6 +333,15 @@ pub fn directed_fan(n: usize) -> DiGraph<(), ()> {
     }
 
     g
+}
+
+/// Parse a file in graph6 format into an undirected graph
+pub fn ungraph_from_graph6_file(path: &str) -> Graph<(), (), Undirected, u32> {
+    let mut f = File::open(path).expect("file not found");
+    let mut contents = String::new();
+    f.read_to_string(&mut contents)
+        .expect("failed to read from file");
+    Graph::from_graph6_string(contents)
 }
 
 #[allow(clippy::needless_range_loop)]

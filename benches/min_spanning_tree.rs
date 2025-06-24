@@ -7,7 +7,7 @@ use test::Bencher;
 
 #[allow(dead_code)]
 mod common;
-use common::{digraph, ungraph};
+use common::{digraph, ungraph, ungraph_from_graph6_file};
 
 use petgraph::{
     algo::{min_spanning_tree, min_spanning_tree_prim},
@@ -64,6 +64,18 @@ fn min_spanning_tree_kruskal_petersen_dir_bench(bench: &mut Bencher) {
 }
 
 #[bench]
+fn min_spanning_tree_kruskal_2000n(bench: &mut Bencher) {
+    let g = ungraph_from_graph6_file("tests/res/graph_2000n.g6");
+    bench.iter(|| iterate_mst_kruskal(&g));
+}
+
+#[bench]
+fn min_spanning_tree_kruskal_6000n(bench: &mut Bencher) {
+    let g = ungraph_from_graph6_file("tests/res/graph_6000n.g6");
+    bench.iter(|| iterate_mst_kruskal(&g));
+}
+
+#[bench]
 fn min_spanning_tree_prim_praust_undir_bench(bench: &mut Bencher) {
     let a = ungraph().praust_a();
     let b = ungraph().praust_b();
@@ -87,6 +99,18 @@ fn min_spanning_tree_prim_petersen_undir_bench(bench: &mut Bencher) {
     bench.iter(|| (iterate_mst_prim(&a), iterate_mst_prim(&b)));
 }
 
+#[bench]
+fn min_spanning_tree_prim_2000n(bench: &mut Bencher) {
+    let g = ungraph_from_graph6_file("tests/res/graph_2000n.g6");
+    bench.iter(|| iterate_mst_prim(&g));
+}
+
+#[bench]
+fn min_spanning_tree_prim_6000n(bench: &mut Bencher) {
+    let g = ungraph_from_graph6_file("tests/res/graph_6000n.g6");
+    bench.iter(|| iterate_mst_prim(&g));
+}
+
 fn iterate_mst_kruskal<G>(g: G)
 where
     G: Data + IntoEdges + IntoNodeReferences + IntoEdgeReferences + NodeIndexable,
@@ -97,6 +121,7 @@ where
         std::hint::black_box(e);
     }
 }
+
 fn iterate_mst_prim<G>(g: G)
 where
     G: Data + IntoEdges + IntoNodeReferences + IntoEdgeReferences + NodeIndexable,

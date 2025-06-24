@@ -9,6 +9,7 @@ pub mod astar;
 pub mod bellman_ford;
 pub mod bridges;
 pub mod coloring;
+pub mod connectivity;
 pub mod dijkstra;
 pub mod dominators;
 pub mod feedback_arc_set;
@@ -55,7 +56,7 @@ pub use isomorphism::{
 };
 pub use johnson::johnson;
 pub use k_shortest_path::k_shortest_path;
-pub use matching::{greedy_matching, maximum_matching, Matching};
+pub use matching::{greedy_matching, maximum_bipartite_matching, maximum_matching, Matching};
 pub use maximal_cliques::maximal_cliques;
 pub use maximum_flow::{dinics, ford_fulkerson};
 pub use min_spanning_tree::{min_spanning_tree, min_spanning_tree_prim};
