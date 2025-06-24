@@ -2,14 +2,14 @@ use alloc::{collections::VecDeque, vec, vec::Vec};
 use core::ops::Sub;
 
 use crate::{
-    algo::PositiveMeasure,
     data::DataMap,
     visit::{
-        EdgeCount, EdgeIndexable, EdgeRef, IntoEdges, IntoEdgesDirected, NodeCount, NodeIndexable,
-        VisitMap, Visitable,
+        EdgeCount, EdgeIndexable, IntoEdges, IntoEdgesDirected, NodeCount, NodeIndexable, VisitMap,
+        Visitable,
     },
 };
 
+use super::{EdgeRef, PositiveMeasure};
 use crate::prelude::Direction;
 
 fn residual_capacity<N>(
@@ -109,13 +109,29 @@ where
     }
 }
 
-/// \[Generic\] Ford-Fulkerson algorithm.
+/// [Ford-Fulkerson][ff] algorithm in the [Edmonds-Karp][ek] variation.
 ///
-/// Computes the [maximum flow][ff] of a weighted directed graph.
+/// Computes the [maximum flow] from `source` to `destination` in a weighted directed graph.
 ///
-/// If it terminates, it returns the maximum flow and also the computed edge flows.
+/// # Arguments
+/// * `network`: a wieghted directed graph.
+/// * `source`: a stream *source* node.
+/// * `destination`: a stream *sink* node.
 ///
+/// # Returns
+/// Returns a tuple of two values:
+/// * `N::EdgeWeight`: computed maximum flow;
+/// * `Vec<N::EdgeWeight>`: the flow of each edge. The vector is indexed by the graph's edge indices.
+///
+/// # Complexity
+/// * Time complexity: **O(|V||E|²)**.
+/// * Auxiliary space: **O(|V| + |E|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
+///
+/// [maximum flow]: https://en.wikipedia.org/wiki/Maximum_flow_problem
 /// [ff]: https://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm
+/// [ek]: https://en.wikipedia.org/wiki/Edmonds%E2%80%93Karp_algorithm
 ///
 /// # Example
 /// ```rust
@@ -160,7 +176,7 @@ where
     N::EdgeWeight: Sub<Output = N::EdgeWeight> + PositiveMeasure,
 {
     let mut edge_to = vec![None; network.node_count()];
-    let mut flows = vec![N::EdgeWeight::zero(); network.edge_count()];
+    let mut flows = vec![N::EdgeWeight::zero(); network.edge_bound()];
     let mut max_flow = N::EdgeWeight::zero();
     while has_augmented_path(&network, source, destination, &mut edge_to, &flows) {
         let mut path_flow = N::EdgeWeight::max();
