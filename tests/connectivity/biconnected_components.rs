@@ -329,8 +329,6 @@ where
     }
     assert_eq!(iter.next(&gr), None);
 
-    println!("actual: {:?}", biconnected_components);
-    println!("expected: {:?}", expected_biconnected_components);
     let expected_len = expected_biconnected_components.len();
     for expected_biconnected_component in expected_biconnected_components {
         assert!(biconnected_components.contains(&expected_biconnected_component));
