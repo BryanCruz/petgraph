@@ -248,8 +248,6 @@ fn test_two_edge_connected_components<G, N>(
     }
     assert_eq!(iter.next(&gr), None);
 
-    println!("actual: {:?}", two_edge_connected_components);
-    println!("expected: {:?}", expected_two_edge_connected_components);
     let expected_len = expected_two_edge_connected_components.len();
     for expected_two_edge_connected_component in expected_two_edge_connected_components {
         assert!(two_edge_connected_components.contains(&expected_two_edge_connected_component));

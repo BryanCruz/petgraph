@@ -4,13 +4,12 @@ use core::ops::Sub;
 use crate::{
     algo::PositiveMeasure,
     data::DataMap,
+    prelude::Direction,
     visit::{
         EdgeCount, EdgeIndexable, EdgeRef, IntoEdges, IntoEdgesDirected, NodeCount, NodeIndexable,
         VisitMap, Visitable,
     },
 };
-
-use crate::prelude::Direction;
 
 fn residual_capacity<N>(
     network: N,
