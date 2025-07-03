@@ -18,6 +18,7 @@ pub mod isomorphism;
 pub mod johnson;
 pub mod k_shortest_path;
 pub mod matching;
+pub mod matching_bipartite;
 pub mod maximal_cliques;
 pub mod min_spanning_tree;
 pub mod page_rank;
@@ -55,7 +56,8 @@ pub use isomorphism::{
 };
 pub use johnson::johnson;
 pub use k_shortest_path::k_shortest_path;
-pub use matching::{greedy_matching, maximum_bipartite_matching, maximum_matching, Matching};
+pub use matching::{greedy_matching, maximum_matching, Matching};
+pub use matching_bipartite::maximum_bipartite_matching;
 pub use maximal_cliques::maximal_cliques;
 pub use min_spanning_tree::{min_spanning_tree, min_spanning_tree_prim};
 pub use page_rank::page_rank;
