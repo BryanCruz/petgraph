@@ -4,8 +4,7 @@ use core::ops::Sub;
 use crate::{
     data::DataMap,
     visit::{
-        EdgeCount, EdgeIndexable, IntoEdges, IntoEdgesDirected, NodeCount, NodeIndexable, VisitMap,
-        Visitable,
+        EdgeIndexable, IntoEdges, IntoEdgesDirected, NodeCount, NodeIndexable, VisitMap, Visitable,
     },
 };
 
@@ -166,13 +165,7 @@ pub fn ford_fulkerson<N>(
     destination: N::NodeId,
 ) -> (N::EdgeWeight, Vec<N::EdgeWeight>)
 where
-    N: NodeCount
-        + EdgeCount
-        + IntoEdgesDirected
-        + EdgeIndexable
-        + NodeIndexable
-        + DataMap
-        + Visitable,
+    N: NodeCount + IntoEdgesDirected + EdgeIndexable + NodeIndexable + DataMap + Visitable,
     N::EdgeWeight: Sub<Output = N::EdgeWeight> + PositiveMeasure,
 {
     let mut edge_to = vec![None; network.node_count()];
